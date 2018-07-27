@@ -1,50 +1,62 @@
 int rep, segments, fTime, fibPow, revs, rfacInit, restart;
 float fib = 1.61803398875;
 float symmetry, tf, scl, scaleInc, rfacDt, rainbowRate, rotRate, repShift;
+float rfac;
 color c1, c2;
-boolean scalingOn, rotateOn, clockwiseOn, counterClockwiseOn; 
+boolean scalingOn, rotateOn, clockwiseOn, counterClockwiseOn, bgOn; 
+boolean parameterDisplayOn;
 float xmag, ymag = 0;
 float newXmag, newYmag = 0; 
 float dxmag, dymag = 0;
 float dnewXmag, dnewYmag = 0; 
+PFont mono;
 
 void setup() {
   //size(1700, 1100);
   fullScreen(P3D, SPAN);
   background(0, 0, 0);
   noCursor();
-  symmetry = 1.1;
-  segments = 37;
-  rep = 6;
-  fibPow = 6;
+  revs = 3;
+  symmetry = 66.557;
+  segments = 310;
+  fibPow = -1;
+  rep = 5;
   scl = 1;
-  rainbowRate = 1;
-  tf = 4;
-  repShift = 0.1;
+  rainbowRate = 2.789;
+  tf = 23.03;
+  repShift = 1.02;
   scalingOn = false;
   rotateOn = true;
   scaleInc = 0.001;
-  revs = 10;
-  rfacDt = 1/100.0;
-  rfacInit = 1000;
-  rotRate = 1;
+  rfacDt = 0.0437;
+  rfacInit =20;
+  rotRate = 0.006;
   restart = 0;
-  clockwiseOn = true;
+  clockwiseOn = false;
   counterClockwiseOn = true;
+  bgOn = false;
+  parameterDisplayOn = false;
 
   colorMode(HSB, 255);
   rectMode(RADIUS);
+  
+  String[] fontList = PFont.list();
+  for (int i=0; i<fontList.length; i++){
+    println(fontList[i]);
+  }
+  mono = createFont("Ubuntu Mono Bold", 16);
 }
 
 void draw() {
   fTime = (millis() - restart)*60/1000;
-  float rfac = rfacInit + pow(fTime*rfacDt, 2);
-  //background(170, 0, 255);
+  rfac = rfacInit + pow(fTime*rfacDt, 2);
+  if (bgOn) {
+    background(170, 0, 0);
+  }
   if (scalingOn) {
     scl = scl + scaleInc;
     scale(scl);
   }
-  //camera angle
   pushMatrix();
   translate(width/2.0, height/2.0, 0);  
   translate(dxmag, dymag, 0);
@@ -62,17 +74,19 @@ void draw() {
     rotateZ(2*PI/rep);
     int hue = int((n*repShift+(fTime / rainbowRate)) % 255);
     for (int t=0; t<segments*revs; t++) {
-      c1 = color((hue+(t*tf))%255, 252, 252, 0);
-      c2 = color((hue+(t*tf)+(256/2))%255, 252, 252, 120);
+      c1 = color((hue+(t*tf))%255, 252, 252, 110);
+      c2 = color((hue+(t*tf)+(256/2))%255, 252, 252, 220);
       float theta = t * 2 * PI / (segments);
       float theta2 = 2 * PI - theta;
       float r =  rfac * pow(fib, (-1 * symmetry * t/float(segments)));
       float s = r/pow(fib, fibPow);
-      if (r<3000){
+      if (r<3000 && r > 0.01){
         pushMatrix();
         translate(0, 0, r);
         fill(c1);
         stroke(c2);
+        noFill();
+        //noStroke();
         if(clockwiseOn){
           brush(r*sin(theta), r*cos(theta), s);
         }
@@ -90,16 +104,20 @@ void draw() {
     }
   }
   popMatrix();
+  if (parameterDisplayOn) {
+    displayParameters();
+  }
 }
 
 void brush(float x, float y, float s) {
-  rect(x, y, s, s);
+  //rect(x, y, s, s);
+  ellipse(x, y, s, s);
 }
 
 void keyPressed() {
   switch(key) {
-    case('l'):
-    save("savedImage"+int(random(10000))+".tif");
+    case('"'):
+      save("savedImage"+int(random(10000))+".tif");
     break;
     case('q'):
     revs = revs + 1;
@@ -155,7 +173,10 @@ void keyPressed() {
     case('k'):
       repShift = repShift * 0.9;
     break;
-    case('P'):
+    case('z'):
+      parameterDisplayOn = !parameterDisplayOn;
+    break;
+    case('Z'):
       restart = millis();
     break;
     case('x'):
@@ -168,6 +189,9 @@ void keyPressed() {
       dxmag = 0;
       dymag = 0;
     break;
+    case('b'):
+      bgOn = !bgOn;
+    break;
     case('m'):
       rotateOn = !rotateOn;
     break;
@@ -177,6 +201,19 @@ void keyPressed() {
     case(','):
       rotRate *= 0.9;
     break;
+    case('o'):
+      rfacInit *=1.1;
+    break;
+    case('l'):
+      rfacInit *= 0.9;
+    break;
+    case('p'):
+      rfacDt *=1.1;
+    break;
+    case(';'):
+      rfacDt *= 0.9;
+    break;
+      
   }
 }
 
@@ -217,15 +254,41 @@ void dragMatrix() {
   
 }
 
-
-  //pushStyle();
-  //rectMode(CORNER);
-  //fill(170, 50, 150);
-  //rect(0, 80, 180, 100);
-  //fill(170, 255, 0);
-  //text("fTime: ", 20, 100); 
-  //text(fTime, 80, 100);
-  //text("rfac: ", 20, 150);
-  //text(rfac, 80, 150);
-  //popStyle();
+void displayParameters() {
+  int tab = 110;
+  int x = tab;
+  int y = height - 20;
+  int count = 0;
+  pushStyle();  
+  camera();
+  hint(DISABLE_DEPTH_TEST);
+  noLights();
+  textMode(MODEL);
+  rectMode(CORNER);
+  fill(170, 50, 150);
+  noStroke();
+  rect(x-tab/2, y-20, width - tab, 30);
+  fill(170, 255, 0);
+  textFont(mono);
+  String params = "";
+  params += "frameRate " + int(frameRate);
+  params += "  fTime " + fTime;
+  params += "  rfac " + int(rfac);
+  params += "  revs " + revs;
+  params += "  sym " + symmetry;
+  params += "  seg " + segments;
+  params += "  size " + fibPow;
+  params += "  rep " + rep;
+  params += "  R " + rainbowRate;
+  params += "  tf " + tf;
+  params += "  repShift " + repShift;
+  params += "  rfacInit " + rfacInit;
+  params += "  rfacDt " + rfacDt;
+  params += "  rotRate " + rotRate;
+  
+  text(params, x, y); 
+  
+  hint(ENABLE_DEPTH_TEST);
+  popStyle();
+}
   
