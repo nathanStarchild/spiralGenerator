@@ -29,20 +29,6 @@ String mode;
 ParamRoutine symRtn, segRtn, sizeRtn, repRtn, rainbowRtn, tfRtn, rShiftRtn, rrzRtn, rrxRtn;
 int nSaves = 0;
 
-import processing.sound.*;
-FFT fft;
-SoundFile aIn;
-//AudioIn aIn;
-int bands = 512;
-int usefulBands = bands/2;
-float[] sum = new float[usefulBands];
-float[] avg = new float[usefulBands];
-float[] correctedSpectrum = new float[usefulBands];
-//float[] spectrum = new float[bands];
-float smoothingFactor = 0.1;
-int count = 0; //changeme
-float totalAverage = 0.01; //changeme
-float currentAvg = 0;
 
 void setup() {
   fullScreen(P3D, SPAN);
@@ -53,7 +39,6 @@ void setup() {
   float fov = PI/3.0;
   float cameraZ = (height/2.0) / tan(fov/2.0);
   perspective(PI/3.0, float(width)/float(height), cameraZ/100.0, cameraZ*1000.0);
-  mode = "record";//"live";//or "record"
   colorMode(HSB, 255);
   rectMode(RADIUS);
   fr1 = 0;
@@ -74,8 +59,6 @@ void setup() {
   growthOn = true;
   mSize = false;
   
-  //palette = rainbowPalette();
-  //palette = switchPalette(2);
   myPalette = new Palette();
   loadParameters(981);
   mode = "live";
@@ -84,22 +67,22 @@ void setup() {
   if (fftOn) {
     fftSetup();
   }
-  //lights();
 
 }  
 
 void draw() {
   
   if (fftOn) {
+    //do fft analysis
     fftLoop();
   }
 
-  //mode = "live";
   if (mode == "live") {
     fTime = (millis() - restart)*60/1000;
   } else {
     fTime = frameCount - restart;
   }
+
   if (growthOn) {
     rfac = rfacInit + pow(fTime*rfacDt, 2);
     //rfac = rfacInit + pow(fTime*rfacDt, segments);//for looping purposes
@@ -107,22 +90,22 @@ void draw() {
     rfac = map(mouseY, 0, height, 0, 4*height);
   }
   // rotRateZ = 720 / float(loopEvery*rep);
-  //tfRoutine();
-  //symmetryRoutine();
-  //rainbowRate = symmetry*11;
   runParamRoutines();
-  //tf = 15 + currentAvg * 255;
-  //symmetry = 5 - currentAvg * 255;
+
   if (bgOn) {
     background(170, 0, 0);
   }
+
   if (scalingOn) {
     scl = scl + scaleInc;
     scale(scl);
   }
+
   pushMatrix();
   translate(width/2.0, height/2.0, 0);  
   translate(dxmag, dymag, 0);
+
+  //interact with mouse
   if (mousePressed & dragOn) {    
     rotateX(-ymag); 
     rotateZ(-xmag);
@@ -132,6 +115,7 @@ void draw() {
   } else {
     mouseCamera(0);
   }
+
   if (rotateXOn) {
     rotateX(fTime*rotRateX*PI/360 - PI/4);
   }
@@ -144,23 +128,15 @@ void draw() {
     image(starter, -width/2.0, -height/2.0);
     popMatrix();
   }
-  if (true) {
-    //rotateX(PI/8);
-    //rotateX(map(sin((fTime/(60.0*60.0))*4*PI), -1, 1, -PI/6, PI/6));
-    //rotateY(map(sin((fTime/(60.0*60.0))*4.5*PI), -1, 1, -PI/6, 0));
-  }
   
   strokeWeight(strWeight);
   
+  //draw the spirals
   for (int n=0; n<rep; n++) {
     rotateZ(2*PI/rep);
     //rotateX(2*PI/rep);
     hue = int((n*repShift+(fTime / rainbowRate)) % 256);
     for (int t=0; t<segments*revs; t++) {
-      //f1 = color((hue+(t*tf))%256, satf1, brif1, alphaf1);
-      //s1 = color((hue+(t*tf)+cShifts1)%256, sats1, bris1, alphas1);
-      //f2 = color((hue+(t*tf)+cShiftf2)%256, satf2, brif2, alphaf2);
-      //s2 = color((hue+(t*tf)+cShifts2)%256, sats2, bris2, alphas2);
       f1 = myPalette.getColor(int((hue+(t*tf))%256), alphaf1); //<>//
       s1 = myPalette.getColor(int((hue+(t*tf)+cShifts1)%256), alphas1);
       f2 = myPalette.getColor(int((hue+(t*tf)+cShiftf2)%256), alphaf2);
@@ -168,11 +144,9 @@ void draw() {
       float theta = t * 2 * PI / (segments);
       float theta2 = 2 * PI - theta;
       float r =  rfac * pow(fib, (-1 * symmetry * t/float(segments)));
-      //r = r * correctedSpectrum[t%usefulBands]; 
-      //float s = r * correctedSpectrum[t%usefulBands] * 5/pow(fib, fibPow);
       float s = r/pow(fib, fibPow);
       if (fftOn) {
-        s = s * correctedSpectrum[t%usefulBands]; 
+        // s = s * correctedSpectrum[t%usefulBands]; 
       }
       if (r<0.01) {
         break;
@@ -204,10 +178,13 @@ void draw() {
       }
     }
   }
-  popMatrix();
+  popMatrix();//pushMatrix() line 104
+
   if (parameterDisplayOn) {
     displayParameters();
   }
+
+  //Recording biz
   //if (frameCount % 2 == 0) {
     //if (record && frameCount % 3 == 0) {
     if (record && false) {
@@ -230,58 +207,17 @@ void draw() {
 }
 
 void fftSetup() {
-  aIn = new SoundFile(this, "left alone.wav");
-  aIn.loop();
-  // Create an Audio input and grab the 1st channel
-  //aIn = new AudioIn(this, 0);
-  // Begin capturing the audio input
-  //aIn.start();
-  fft = new FFT(this, bands);
-  fft.input(aIn);
+  //switching to use minim instead...
 }
   
 
 void fftLoop() {
-  // Perform the analysis
-  fft.analyze();
-  
-  float avgSum = 0;
-  currentAvg = 0;
-  
-
-  for (int i = 0; i < usefulBands; i++) {
-    // Smooth the FFT spectrum data by smoothing factor
-    //sum[i] += (fft.spectrum[i] - sum[i]) * smoothingFactor;
-    if (fft.spectrum[i] > sum[i]) {
-      sum[i] = lerp(sum[i], fft.spectrum[i], 0.5);
-    } else {
-      sum[i] = lerp(sum[i], fft.spectrum[i], 0.05);
-    }
-      
-    currentAvg += sum[i];
-    
-    //keep a running average
-    avg[i] = (sum[i] + avg[i] * count) / (count + 1);
-    count++;
-    avgSum += avg[i];
-
-    // Draw the rectangles, adjust their height using the scale factor
-    //rect(i*barWidth, height, barWidth, -sum[i]*height);
-    //pushStyle();
-    //fill(100, 100, 255);
-    //ellipse(i*barWidth, height-avg[i]*height, barWidth, barWidth);
-    float cf = totalAverage / avg[i];
-    //fill(100, 100, 100);
-    //popStyle();
-    //rect(i*barWidth, height, barWidth/2, -sum[i]*height*cf*scale);
-    correctedSpectrum[i] = sum[i] * cf;
-  }
-  totalAverage = avgSum/usefulBands;
-  currentAvg = currentAvg / usefulBands;
+  //switching to use minim instead....
 }
 
 
 void loadParameters(int n) {
+  //eep what a mess. These should all be saved in some file format...
   if (mode == "record") {
     restart = frameCount;
   } else {
@@ -1299,498 +1235,6 @@ void brush(float x, float y, float s) {
   }
 }
 
-class Palette {
-  int nPalettes, current;
-  color[] palette;
-  
-  Palette () {
-    nPalettes = 35;
-    current = 0;
-    palette = this.switchPalette(0);
-  }
-  
-  color getColor(int n, int alpha) {
-    color c = this.palette[n];
-    color alphaColor = alpha << 030;
-    return c & ~#000000 | alphaColor; //some serious bitbanging magic
-  }
-  
-  void nextPalette(){
-    this.current = (this.current + 1) % this.nPalettes;
-    this.palette = this.switchPalette(this.current);
-  }
-  
-  void setPalette(int n) {
-    if (n >= this.nPalettes) {
-      return;
-    }
-    this.current = n;
-    this.palette = this.switchPalette(this.current);    
-  }
-  
-  color[] rainbowPalette() {
-    pushStyle();
-    colorMode(HSB, 360, 1, 1);
-    int[] hueValues = {0, 15, 30, 60, 90, 120, 150, 180, 210, 225, 240, 270, 300, 330};//, 360};
-    color[] c = new color[hueValues.length];
-    for (int index = 0; index < hueValues.length; index++) {
-      c[index] = color(hueValues[index], 1, 1);
-    }
-    popStyle();
-    return this.getPalette(c);
-  }
-  
-  color[] rainbowBWPalette() {
-    pushStyle();
-    colorMode(HSB, 360, 1, 1);
-    int[] hueValues = {0, 15, 30, 60, 90, 120, 150, 180, 210, 225, 240, 270, 300, 330};//, 360};
-    color[] c = new color[hueValues.length*2];
-    for (int index = 0; index < hueValues.length; index++) {
-      c[2*index] = color(hueValues[index], 1, 1);
-      c[2*index + 1] = color(1, 0,  index%2);
-    }
-    popStyle();
-    return this.getPalette(c);
-  }
-  
-  color[] getPalette(color[] colorsIn) {
-    int nColors = colorsIn.length;
-    color[] palette = new color[256];
-    int stepsPerCycle = 256 / nColors;
-    int n = 0;
-    int c = 0;
-    while (n < 256) {
-      for (int i=0; i<stepsPerCycle; i++) {
-        if (n<256){
-          //palette[n] = lerpColor(colorsIn[c%nColors], colorsIn[(c+1)%nColors], float(i)/float(stepsPerCycle));
-          palette[n] = smootherStepC(colorsIn[c%nColors], colorsIn[(c+1)%nColors], float(i)/float(stepsPerCycle));
-        }
-        n++;
-      }
-      c++;
-    }
-    return palette;
-  }
-  
-  color[] switchPalette(int n) {
-    if (n==1) {
-      //b/w
-      return this.getPalette(new color[] {color(0), color(255)});
-    } else if (n==2) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[9];
-      c[0] = color(184, 215, 0);
-      c[1] = color(0, 181, 8);
-      c[2] = color(251, 81, 3);
-      c[3] = color(251, 153, 20);
-      c[4] = color(247, 221, 0);
-      c[5] = color(239, 192, 114);
-      c[6] = color(248, 238, 203);
-      c[7] = color(88, 206, 210);
-      c[8] = color(69, 1, 148);
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==3) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[9];    
-      c[0] = color(50,36,41);
-      c[1] = color(246,172, 213);
-      c[2] = color(248, 0, 106 );
-      c[3] = color(121, 21, 145);
-      c[4] = color(96, 16, 185);
-      c[5] = color(72, 47, 174);
-      c[6] = color(234, 0, 169);
-      c[7] = color(1, 0, 0);
-      c[8] = color(97, 11, 200);
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==4) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[5];    
-      c[0] = color(253,0,255);
-      c[1] = color(253,255,0);
-      c[2] = color(0,255,56);
-      c[3] = color(0,249,255);
-      c[4] = color(60,0,255);
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==5) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[5];   
-      c[0] = color(0, 255, 255);
-      c[1] = color(255,155,141);
-      c[2] = color(255,0,243);
-      c[3] = color(170,0,255);
-      c[4] = color(0,46,255);
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==6) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[5];
-      c[0] = color(1, 0, 0);
-      c[1] = color(0,255,210);
-      c[2] = color(0,186,163);
-      c[3] = color(86,255,182);
-      c[4] = color(81,81,81);
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==7) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[9];
-      c[0] = color(180, 77, 202);
-      c[1] = color(248, 180, 250);
-      c[2] = color(100,0,151);
-      c[3] = color(78, 169, 246);
-      c[4] = color(223, 239, 253);
-      c[5] = color(11, 106, 186);
-      c[6] = color(108, 186, 129);
-      c[7] = color(190, 255, 227);
-      c[8] = color(0, 202, 96);
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==8) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[5];
-      c[0] = color(166,124,0);
-      c[1] = color(191,155,48);
-      c[2] = color(255,191,0);
-      c[3] = color(255,207,64);
-      c[4] = color(255,220,115);
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==9) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[6];
-      c[0] = color(255, 247, 103);
-      c[1] = color(146, 234, 176);
-      c[2] = color(87, 214, 231);
-      c[3] = color(146, 234, 176);
-      c[4] = color(255, 247, 103);
-      c[5] = color(247, 104, 168);
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==10) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[2];
-      c[0] = color(255, 0, 255);
-      c[1] = color(0, 255, 255);
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==11) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[8];
-      c[0] = color(156, 213, 48);
-      c[1] = color(85, 102, 53);
-      c[2] = color(54, 64, 33);
-      c[3] = color(3, 95, 87);
-      c[4] = color(0, 176, 171);
-      c[5] = color(147, 231, 224);
-      c[6] = color(216, 231, 230);
-      c[7] = color(222, 240, 202);
-      //c[0] = color(156, 213, 48);
-      //c[1] = color(0, 176, 171);
-      //c[2] = color(0);
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==12) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[6];
-      c[0] = color(126, 186, 186);
-      c[1] = color(126, 186, 186);
-      c[2] = color(76, 123, 139);
-      c[3] = color(76, 123, 139);
-      c[4] = color(178, 78,142);
-      c[5] = color(178, 78,142);
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==13) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[4];
-      c[0] = color(43, 240, 252);
-      c[1] = color(105, 10, 255);
-      c[2] = color(0, 247, 222);
-      c[3] = color(51, 2, 174);
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==14) {
-      return this.rainbowBWPalette();
-    } else if (n==15) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[4];
-      c[0] = #08F7FE;
-      c[1] = #09FBD3;
-      c[2] = #FE53BB;
-      c[3] = #F5D300;
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==16) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[4];
-      c[0] = #FFACFC;
-      c[1] = #F148FB;
-      c[2] = #7122FA;
-      c[3] = #560A86;
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==17) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[4];
-      c[0] = #75D5FD;
-      c[1] = #B76CFD;
-      c[2] = #FF2281;
-      c[3] = #011FFD;
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==18) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[4];
-      c[0] = #FDC7D7;
-      c[1] = #FF9DE6;
-      c[2] = #A5D8F3;
-      c[3] = #E8E500;
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==19) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[4];
-      c[0] = #00FECA;
-      c[1] = #FDF200;
-      c[2] = #FF85EA;
-      c[3] = #7B61F8;
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==20) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[4];
-      c[0] = #FFD300;
-      c[1] = #DE38C8;
-      c[2] = #652EC7;
-      c[3] = #33135C;
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==21) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[4];
-      c[0] = #3B27BA;
-      c[1] = #E847AE;
-      c[2] = #13CA91;
-      c[3] = #FF9472;
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==22) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[4];
-      c[0] = #FFDEF3;
-      c[1] = #FF61BE;
-      c[2] = #3B55CE;
-      c[3] = #35212A;
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==23) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[4];
-      c[0] = #FDD400;
-      c[1] = #FDB232;
-      c[2] = #02B8A2;
-      c[3] = #01535F;
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==24) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[4];
-      c[0] = #FEC763;
-      c[1] = #EA55B1;
-      c[2] = #A992FA;
-      c[3] = #00207F;
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==25) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[4];
-      c[0] = #79FFFE;
-      c[1] = #FEA0FE;
-      c[2] = #FF8B8B;
-      c[3] = #F85125;
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==26) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[4];
-      c[0] = #CE96FB;
-      c[1] = #FF8FCF;
-      c[2] = #00C2BA;
-      c[3] = #037A90;
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==27) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[4];
-      c[0] = #01FFC3;
-      c[1] = #01FFFF;
-      c[2] = #FFB3FD;
-      c[3] = #9D72FF;
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==28) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[4];
-      c[0] = #A0EDFF;
-      c[1] = #EBF875;
-      c[2] = #28CF75;
-      c[3] = #FE6B35;
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==29) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[4];
-      c[0] = #FFFF66;
-      c[1] = #FC6E22;
-      c[2] = #FF1493;
-      c[3] = #C24CF6;
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==30) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[4];
-      c[0] = #D9EB4B;
-      c[1] = #00A9FE;
-      c[2] = #FD6BB6;
-      c[3] = #EF0888;
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==31) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[4];
-      c[0] = #FFE3F1;
-      c[1] = #FE1C80;
-      c[2] = #FF5F01;
-      c[3] = #CE0000;
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==32) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[4];
-      c[0] = #FEF900;
-      c[1] = #03DDDC;
-      c[2] = #FF822E;
-      c[3] = #F21A1D;
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==33) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[4];
-      c[0] = #FCF340;
-      c[1] = #7FFF00;
-      c[2] = #FB33DB;
-      c[3] = #0310EA;
-      popStyle();
-      return this.getPalette(c);
-    } else if (n==34) {
-      pushStyle();
-      colorMode(RGB, 255, 255, 255, 255);
-      color[] c = new color[4];
-      c[0] = #E92EFB;
-      c[1] = #FF2079;
-      c[2] = #440BD4;
-      c[3] = #04005E;
-      popStyle();
-      return this.getPalette(c);
-    }
-    return this.rainbowPalette();
-  }
-  
-  
-}
-
-
-//////////////////////////////////////////////
-//smootherStep biz
-//////////////////////////////////////////////
-//OK, well, the problem with lerpColor is that it doesn't travel 
-//the shortest distance on the colour wheel, it always goes clockwise.
-//So 2 colours that are next to each other if they are in 
-//counter clockwise order will give a rainbow gradient.
-//so we use the "smootherStep" algorithm instead. 
-//As per https://medium.com/@behreajj/color-gradients-in-processing-v-2-0-e5c0b87cdfd2
-
-int composeclr(float[] in) {
-  return composeclr(in[0], in[1], in[2], in[3]);
-}
-
-// Assumes that RGBA are in range 0 .. 1.
-int composeclr(float red, float green, float blue, float alpha) {
-  return round(alpha * 255.0) << 24
-    | round(red * 255.0) << 16
-    | round(green * 255.0) << 8
-    | round(blue * 255.0);
-}
-
-// Assumes that out has 4 elements.
-// 1.0 / 255.0 = 0.003921569
-float[] decomposeclr(int clr) {
-  float[] out = new float[] { 0.0, 0.0, 0.0, 1.0 };
-  out[3] = (clr >> 24 & 0xff) * 0.003921569;
-  out[0] = (clr >> 16 & 0xff) * 0.003921569;
-  out[1] = (clr >> 8 & 0xff) * 0.003921569;
-  out[2] = (clr & 0xff) * 0.003921569;
-  return out;
-}
-
-float smootherStep(float st) {
-  return st * st * st * (st * (st * 6.0 - 15.0) + 10.0);
-}
-
-float[] smootherStepRgb(float[] a, float[] b, float st) {
-  float[] out = new float[4];
-  float eval = smootherStep(st);
-  out[0] = a[0] + eval * (b[0] - a[0]);
-  out[1] = a[1] + eval * (b[1] - a[1]);
-  out[2] = a[2] + eval * (b[2] - a[2]);
-  out[3] = a[3] + eval * (b[3] - a[3]);
-  return out;
-}
-
-color smootherStepC(color c1, color c2, float frac) {
-  float[] c1f, c2f = new float[4];
-  c1f = decomposeclr(c1);
-  c2f = decomposeclr(c2);
-  return composeclr(smootherStepRgb(c1f, c2f, frac));
-}
-//////////////////////////////////////////////
-//end smootherStep biz
-//////////////////////////////////////////////
-
 public class ParamRoutine {
   boolean enabled;
   int mode;
@@ -2544,101 +1988,6 @@ void keyPressed() {
       break;
     }
   }
-}
-
-void tfRoutine() {  
-  if (tf < 0.1) {
-    tf += 0.0001;
-  } else if (tf < 0.5) {
-    tf += 0.001;
-  } else if (tf < 3) {
-    tf += 0.0014;
-  } else if (tf < 6) {
-    tf += 0.0021;
-  } else if (tf < 7.5) {
-    tf += 0.0038;
-  } else if (tf < 8.5) {
-    tf += 0.0022;
-  } else if (tf < 15) {
-    tf += 0.0044;
-  } else if (tf < 18) {
-    tf += 0.003;
-  } else if (tf < 20) {
-    tf += 0.002;
-  } else if (tf < 25) {
-    tf += 0.0026;
-  } else if (tf < 30) {
-    tf += 0.003;
-  } else if (tf < 32) {
-    tf += 0.006;
-  } else if (tf < 40) {
-    tf += 0.014;
-  } else if (tf < 50) {
-    tf += 0.024;
-  } else if (tf < 60) {
-    tf += 0.034;
-  } else if (tf < 70) {
-    tf += 0.043;
-  } else if (tf < 75) {
-    tf += 0.026;
-  }else if (tf < 80) { //slow down in 70s
-    tf += 0.018;
-  } else if (tf < 90) {
-    tf += 0.01;
-  } else if (tf < 100) {
-    tf += 0.024;
-  } else if (tf < 120) {
-    tf += 0.033;
-  } else if (tf < 140) {
-    tf += 0.046;
-  } else if (tf < 180) {
-    tf += 0.052;
-  } else if (tf < 200) {
-    tf += 0.036;
-  } else if (tf < 220) {
-    tf += 0.028;
-  }  else if (tf < 240) {
-    tf += 0.021;
-  }  else if (tf < 250) {
-    tf += 0.018;
-  }  else if (tf < 253) {
-    tf += 0.011;
-  } else if (tf < 255) {
-    tf += 0.006;
-  }
-}
-
-void segRoutine() {
-  if (frameCount % 100 == 0) {
-    segments++;
-  }
-}
-
-void symmetryRoutine() {
-  //if (symmetry > 100) {
-  //  symmetry *= 0.9996;
-  //} else if (symmetry > 50) {
-  //  symmetry *= 0.9997;
-  //} else if (symmetry > 20) {
-  //  symmetry *= 0.9998;
-  //} else if (symmetry > 10) {
-  //  symmetry *= 0.99981;
-  //} else if (symmetry > 5) {
-  //  symmetry *= 0.99981;
-  //} else if (symmetry > 2) {
-  //  symmetry *= 0.99981;
-  //} else if (symmetry > 1) {
-  //  symmetry *= 0.99981;
-  //}  else if (symmetry > 0.5) {
-  //  symmetry *= 0.999812;
-  //}
-  //symmetry = map((1 - frameCount/(60.0*60.0)), 1.0, 0.0, 200.0, 1.0);
-  
-  //float t = 1 - fTime/(60.0*60.0);
-  //symmetry = pow(2.72, 5*t) - 1;
-  
-  float t = fTime/(60.0*60.0);
-  symmetry = map(sin(6*PI/10 + t*PI*10), -1, 1, 0.5, 7);
 }
 
 void mouseCamera(int action) {
