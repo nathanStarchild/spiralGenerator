@@ -1,1 +1,5 @@
 *.tif
+data/*
+ok1/*
+saves/*
+*.mp4
