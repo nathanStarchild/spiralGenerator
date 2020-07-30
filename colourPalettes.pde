@@ -144,15 +144,6 @@ class Palette {
       color(255,220,115),
     });
     list.add(new color[] {
-      color(1,0,0),
-      color(250,0,0),
-      color(250,0,0),
-      color(240,0.86*255,0.65*255),
-      color(250,0,0),
-      color(250,0,0),
-      color(1,0,0),
-    });
-    list.add(new color[] {
       color(255, 247, 103),
       color(146, 234, 176),
       color(87, 214, 231),
@@ -189,6 +180,15 @@ class Palette {
       color(51, 2, 174),
     });
     list.add(rainbowBWPalette());
+    list.add(new color[] {
+      color(1,0,0),
+      color(250,0,0),
+      color(250,0,0),
+      color(240,0.86*255,0.65*255),
+      color(250,0,0),
+      color(250,0,0),
+      color(1,0,0),
+    });
     list.add(new color[] {
       #08F7FE,
       #09FBD3,
@@ -308,6 +308,22 @@ class Palette {
       #FF2079,
       #440BD4,
       #04005E,
+    });
+    list.add(new color[] {
+      color(25, 1, 26),
+      color(1, 1, 1),
+      color(130, 4, 178),
+      color(200, 24, 201),
+      color(7, 9, 27),
+      color(252, 141, 35),
+    });
+    list.add(new color[] {
+      color(22, 6, 23),
+      color(231, 117, 179),
+      color(132, 76, 127),
+      color(252, 147, 191),
+      color(180, 97, 154),
+      color(9, 4, 23),
     });
     popStyle();
     return list;

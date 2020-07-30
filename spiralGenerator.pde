@@ -1,7 +1,9 @@
-int rep, segments, fTime, revs, rfacInit, restart, myBrush, goCount, loopEvery; //<>//
+int rep, segments, fTime, revs, rfacInit, restart, myBrush, goCount, loopEvery;
 float fib = 1.61803398875;
 float symmetry, tf, scl, scaleInc, rfacDt, rainbowRate, rotRateZ, rotRateX, repShift;
-float rfac, fullTime, fibPow;
+float rfac, fullTime, fibPow, fRate, fHue;
+float rf1, rf2;
+int loopGrowths;
 color c1, c2;
 boolean scalingOn, rotateZOn, clockwiseOn, counterClockwiseOn, bgOn; 
 boolean parameterDisplayOn, rotateXOn, mouseCameraOn, ctl, alt;
@@ -32,11 +34,33 @@ OpenSimplexNoise osNoise;
 import AULib.*;
 boolean starting = true;
 PImage img;
+ArrayList<PImage> images = new ArrayList<PImage>();
+int im = 0;
+boolean frameOn = true;
+boolean playVideo1 = false;
+boolean playVideo2 = false;
+PImage vid1;
+PImage vid2;
+boolean showSpiral = true;
+int tn = 0;
+int tFrame = 1;
+int oFrame = 0;
+Easer tFrameEaser = new Easer(1, 1222);
+boolean frameIncrement = false;
+boolean withAlpha = true;
+int magicNumber = 3760;
+Easer tScaleEaser = new Easer(1, 1222);
+Recorder myRecorder;
+
+
+  PImage imggg;
 
 void setup() {
   //fullScreen(P3D, SPAN);
-  //fullScreen(P3D, 2);
-  size(1820, 980, P3D);
+  // fullScreen(P3D, 2);
+  // size(800, 800, P3D);
+  size(864, 1080, P3D);
+  smooth(3);
   background(0, 0, 0);
   noCursor();
   float fov = PI/3.0;
@@ -62,10 +86,14 @@ void setup() {
   growthOn = false;
   mSize = false;
   
+
   myPalette = new Palette();
-  //mode = "record";
-  loadParameters(2);
+  loadParameters(1349);
+  myRecorder = new Recorder(this, g, loopEvery);
+  myRecorder.startRecording();
+  mode = "record";
   fftOn = false;
+  loadImages2();
   
   if (fftOn) {
     fftSetup();
@@ -73,11 +101,22 @@ void setup() {
   
   osNoise = new OpenSimplexNoise((long)random(10));
   
-  img = loadImage("GRETA.jpg");
+  //img = loadImage("GRETA.jpg");
+  // loadImages();
+  //vid1 = loadImage("tunnel/tunnel2445.png");
+  //vid1.resize(height * vid1.width/vid1.height, height);
+  
+  
+  tScaleEaser.setValue(1);  // 
+  
+
 
 }  
 
 void draw() {
+
+  // println("frame " + frameCount);
+  // PImage imggg = loadImage("recorded1/frame" + nf(myRecorder.n, 5) + ".jpg");
   
   //println(mode);
   
@@ -91,11 +130,14 @@ void draw() {
     fTime = frameCount - restart;
   }
 
-  if (growthOn) {
-    rfac = rfacInit + pow(fTime*rfacDt, 2);
-    //rfac = rfacInit + pow(fTime*rfacDt, segments);//for looping purposes
-  } else if (mSize) {
-    rfac = map(mouseY, 0, height, 0, 4*height);
+  //if (growthOn) {
+  //  rfac = rfacInit + pow(fTime*rfacDt, 2);
+  //  //rfac = rfacInit + pow(fTime*rfacDt, segments);//for looping purposes
+  //} else if (mSize) {
+  //  rfac = map(mouseY, 0, height, 0, 4*height);
+  //}
+  if (mSize) {
+   rfac = map(mouseY, 0, height, 0, 4*height);
   }
   // rotRateZ = 720 / float(loopEvery*rep);
   runParamRoutines();
@@ -112,6 +154,40 @@ void draw() {
   pushMatrix();
   translate(width/2.0, height/2.0, 0);  
   translate(dxmag, dymag, 0);
+  
+  
+  if (playVideo1) {
+    //vid1 = loadImage("tunnel/tunnel" + nf(1223 - (fTime % 1223), 4) + ".png");
+    //if (frameIncrement) {
+      tFrame++;
+      tFrame = min(tFrame, 2445);
+    //} else {
+    //  tFrame = ceil(tFrameEaser.getValue(fTime));
+    //}
+    if (tFrame > 200){
+      //println(tFrame);
+      vid1 = loadImage("tunnel/tunnel" + nf(tFrame, 4) + ".png");
+      tint(255);
+      float sc = tScaleEaser.getValue(fTime);
+      //println(sc);
+      vid1.resize(int(sc * height * vid1.width/vid1.height), int(sc *  height));
+      image(vid1, -vid1.width/2.0, -vid1.height/2.0);
+      //tFrame--;
+      //tFrame = 1224 - min(tFrame, 1223);
+    }
+  }
+  
+  if (playVideo2) {
+      //println(tFrame);
+      oFrame++;
+      oFrame = min(oFrame, 7499);
+      vid2 = loadImage("orb/orb" + nf(oFrame, 4) + ".png");
+      //println("w: " + vid2.width + ", h: " + vid2.height);
+      tint(255);
+      //vid2.resize(height * vid2.width/vid2.height, height);
+      //image(vid2, -640, -360);
+      image(vid2, -vid2.width/2.0, -vid2.height/2.0);
+  }
 
   //interact with mouse
   if (mousePressed & dragOn) {    
@@ -139,1078 +215,170 @@ void draw() {
   
   strokeWeight(strWeight);
   
+  
   //draw the spirals
-  for (int n=0; n<rep; n++) {
-    rotateZ(2*PI/rep);
-    //rotateX(2*PI/rep);
-    hue = int((n*repShift+(fTime / rainbowRate)) % 256);
-    for (int t=0; t<segments*revs; t++) {
-      f1 = myPalette.getColor(int((hue+(t*tf))%256), alphaf1); //<>//
-      s1 = myPalette.getColor(int((hue+(t*tf)+cShifts1)%256), alphas1);
-      f2 = myPalette.getColor(int((hue+(t*tf)+cShiftf2)%256), alphaf2);
-      s2 = myPalette.getColor(int((hue+(t*tf)+cShifts2)%256), alphas2);
-      float theta = t * 2 * PI / (segments);
-      float theta2 = 2 * PI - theta;
+  ////for (int n=0; n<rep; n++) {
+  //  rotateZ(2*PI/rep);
+  //  //rotateX(2*PI/rep);
+  //  hue = int((n*repShift+(fTime / rainbowRate)) % 256);
+    //for (int t=0; t<segments*revs; t++) {
+  if (showSpiral){
+    for (int t=segments*revs; t>=0; t--) {
       float r =  rfac * pow(fib, (-1 * symmetry * t/float(segments)));
-      float s = r/pow(fib, fibPow);
-      if (fftOn) {
-        // s = s * correctedSpectrum[t%usefulBands]; 
-      }
-      if (r<0.01) {
+      float s = (r)/pow((0.8*fib), fibPow);
+      if ((r-s)/30>sqrt(pow(width/2, 2) + pow(height/2, 2))) {
         break;
       }
       if ((r-s)/30<sqrt(pow(width/2, 2) + pow(height/2, 2)) && r > 0.1 || myBrush == 3) {
         pushMatrix();
         translate(0, 0, r);
-        fill(f1);
-        stroke(s1);
-        if (alphaf1 == 0) {
-          noFill();
-        } else if (alphas1 == 0) {
-          noStroke();
-        }
-        if (clockwiseOn) {
-          brush(r*sin(theta), r*cos(theta), s);
-        }
-        if (counterClockwiseOn) {
-          fill(f2);
-          stroke(s2);
-          if (alphaf2 == 0) {
+        for (int n=0; n<rep; n++) {
+          if (fftOn) {
+            // s = s * correctedSpectrum[t%usefulBands]; tsht
+          }
+          //if (r<0.01) {
+          //  break;
+          //}
+          
+          rotateZ(2*PI/rep);
+          hue = int((n*repShift+(fTime / rainbowRate)) % 256);
+          fHue = int(((n*repShift+(fTime / fRate)) % 256));
+          f1 = myPalette.getColor(int((hue+(t*tf))%256), alphaf1);
+          s1 = myPalette.getColor(int((hue+(t*tf)+cShifts1)%256), alphas1);
+          f2 = myPalette.getColor(int((hue+(t*tf)+cShiftf2)%256), alphaf2);
+          s2 = myPalette.getColor(int((hue+(t*tf)+cShifts2)%256), alphas2);
+          float theta = t * 2 * PI / (segments);
+          float theta2 = 2 * PI - theta;
+          fill(f1);
+          stroke(s1);
+          if (alphaf1 == 0) {
             noFill();
-          } else if (alphas2 == 0) {
+          } else if (alphas1 == 0) {
             noStroke();
           }
-          brush(r*sin(theta2), r*cos(theta2), s);
+          if (clockwiseOn) {
+            // brush(r*sin(theta), r*cos(theta), s);
+            // im = getImgNum(1, n);
+            // texnGon(myBrush, r*sin(theta), r*cos(theta), s, im, f1);
+            // newTexnGon(myBrush, r*sin(theta), r*cos(theta), s, imggg, f1);
+            // if (true){
+            if (s<1){
+              brush(r*sin(theta), r*cos(theta), s);
+            } else {
+              new2TexnGon(myBrush, r*sin(theta), r*cos(theta), s, int((fHue+(t*tf))%256), f1);
+            }
+          }
+          if (counterClockwiseOn) {
+            fill(f2);
+            stroke(s2);
+            if (alphaf2 == 0) {
+              noFill();
+            } else if (alphas2 == 0) {
+              noStroke();
+            }
+            pushMatrix();
+            translate(0, 0,  0.01);
+            // brush(r*sin(theta2), r*cos(theta2), s);
+            // im = getImgNum(2, n);
+            // texnGon(myBrush, r*sin(theta2), r*cos(theta2), s, im, f2);
+            // if (true){
+            if (s<0.31){
+              brush(r*sin(theta2), r*cos(theta2), s);
+            } else {
+              new2TexnGon(myBrush, r*sin(theta2), r*cos(theta2), s, int((fHue+(t*tf)+cShiftf2)%256), f2);
+            }
+            popMatrix();
+          }
         }
         popMatrix();
       }
     }
   }
   popMatrix();//pushMatrix() line 104
+  
 
   if (parameterDisplayOn) {
     displayParameters();
   }
 
-  //Recording biz
-  //if (frameCount % 2 == 0) {
-    //if (record && frameCount % 3 == 0) {
-    if (record) {
-    saveFrame("greenLight" + goCount + "/frame" + nf(n, 5) + ".tga");
-    n++;
-  }
-  //if (frameCount > 60*30*0.5) {
-  //  if (record && fTime == recordStart + loopEvery) { // hue == 0) {
-  //  record = false;
-  //  parameterDisplayOn = true;
-  //}
-  if (goTime || fTime == fr1 - 1) {// && hue == 0) {
-    parameterDisplayOn = true;
-    record = true;
-    goTime = false;
-    goCount++;
-    recordStart = fTime + 1;
-    n = 0;
-  }
+  // //Recording biz
+  // //if (frameCount % 2 == 0) {
+  //   //if (record && frameCount % 3 == 0) {
+  //   if (record) {
+  //   saveFrame("thisisfix" + goCount + "/frame" + nf(n, 5) + ".jpg");
+  //   n++;
+  // }
+  // //if (frameCount > 60*30*0.5) {
+  // //  if (record && fTime == recordStart + loopEvery) { // hue == 0) {
+  // //  record = false;
+  // //  parameterDisplayOn = true;
+  // //}
+  // if (goTime || fTime == fr1 - 1) {// && hue == 0) {
+  //   parameterDisplayOn = true;
+  //   record = true;
+  //   goTime = false;
+  //   goCount++;
+  //   recordStart = fTime + 1;
+  //   n = 1;
+  // }
+
+  // println("recording");
+  myRecorder.update();
+  //myRecorder.snapshot();
+  //exit();
 }
 
 void fftSetup() {
   //switching to use minim instead...
 }
   
-
 void fftLoop() {
   //switching to use minim instead....
 }
 
+void loadImages() {
+  images.add(loadImage("1.png"));//0
+  images.add(loadImage("2.png"));//1
+  images.add(loadImage("3.png"));//2
+  images.add(loadImage("4.png"));//3
+  images.add(loadImage("birth2.png"));//4
+  images.add(loadImage("birth1.png"));//5
+  images.add(loadImage("birth3.png"));//6
+  images.add(loadImage("birth4.png"));//7
+  images.add(loadImage("birth5.png"));//8
+  images.add(loadImage("birth6.png"));//9
+  images.add(loadImage("birth7.jpg"));//10
+  images.add(loadImage("2the.png"));//11
+  images.add(loadImage("2future.png"));//12
+  images.add(loadImage("2belongs.png"));//13
+  images.add(loadImage("2toThose.png"));//14
+  images.add(loadImage("2who.png"));//15
+  images.add(loadImage("2can.png"));//16
+  images.add(loadImage("2see.png"));//17
+  images.add(loadImage("2it.png"));//18
+  images.add(loadImage("2allWords.png"));//19
+  images.add(loadImage("2eyedrop.png"));//20
+  images.add(loadImage("3Eye1.png"));//21
+  images.add(loadImage("3Eye2.png"));//22
+  images.add(loadImage("3Eye3.png"));//23
+  images.add(loadImage("3Eye4.png"));//24
+  images.add(loadImage("3Eye5.png"));//25
+  images.add(loadImage("2eyedrop.png"));//26
+  images.add(loadImage("1.png"));//27
+  images.add(loadImage("BRAVE_WHITE.png"));//28
+  images.add(loadImage("3.png"));//29
+  images.add(loadImage("FEAR_WHITE.png"));//30
+  images.add(loadImage("flower2bw.png"));//31
+  images.add(loadImage("flower1bw.png"));//32
+  images.add(loadImage("flower3bw.png"));//33
+  images.add(loadImage("flower1bw.png"));//34
+}
 
-void loadParameters(int n) {
-  //eep what a mess. These should all be saved in some file format...
-  //if (mode == "record") {
-  //  restart = 0;
-  //} else if (mode == "live") {
-  //  restart = millis();
-  //}
-  
-  if (n == 342) { //greenLightProject
-    revs = 22;//?
-    symmetry = 5;//0.74;
-    segments = 84;
-    fibPow = 3.287;
-    rep = 6;
-    scl = 1;
-    //loops every 300 frames
-    loopEvery = 60*30;
-    rainbowRate = 1.3;//0.0024?
-    tf = 5.333;
-    repShift = 0.00163;
-    scalingOn = false;
-    rotateZOn = false;
-    rotateXOn = false;
-    scaleInc = 0.001;
-    rfacDt = 1/pow(fib,7);
-    rfacInit = 300;
-    rfac = rfacInit;
-    rotRateZ = 0.12;
-    rotRateX = 0.318;
-    clockwiseOn = true;
-    counterClockwiseOn = true;
-    growthOn = false;
-    bgOn = true;
-    myBrush = 3;
-    strWeight = 1;
-
-    satf1 = 252;
-    sats1 = 252;
-    satf2 = 252;
-    sats2 = 252;
-    brif1 = 252;
-    bris1 = 252;
-    brif2 = 252;
-    bris2 = 252;
-    alphaf1 = 255;
-    alphas1 = 255;
-    alphaf2 = 255;
-    alphas2 = 255;
-    cShifts1 = 256/7;
-    cShifts2 = 256/8;
-    cShiftf2 = (256/7) - (256/8);
-
-    symRtn = new ParamRoutine(true, 342, 59*30);
-    segRtn = new ParamRoutine(true, 342, 97);
-    sizeRtn = new ParamRoutine(true, 342, 14.872);
-    repRtn = new ParamRoutine(true, 342, 156);
-    rainbowRtn = new ParamRoutine(true, 342, 1);
-    tfRtn = new ParamRoutine(true, 342, 150);
-    rShiftRtn = new ParamRoutine(true, 342, 11);
-    rrzRtn = new ParamRoutine(true, 342, 1);
-    rrxRtn = new ParamRoutine(true, 342, 20);
-    rfacRtn = new ParamRoutine(true, 342, 20);
-    
-    myPalette.setPalette(15);
-    
-    mode = "live";
-    goTime = false;
-    
-  
-  } else if (n==0) {
-    revs = 10;
-    symmetry = 10;//0.74;
-    segments = 84;
-    fibPow = 6;
-    rep = 9;
-    scl = 1;
-    //loops every 300 frames
-    loopEvery = 1200;
-    rainbowRate = loopEvery / (256.0);//0.0024?
-    tf = 1;
-    repShift = 0.000001;
-    scalingOn = false;
-    rotateZOn = true;
-    rotateXOn = false;
-    scaleInc = 0.001;
-    rfacDt = 1/pow(fib,25);///!!!!
-    rfacInit = 1000;
-    rotRateZ = 720 / float(loopEvery*rep);
-    rotRateX = pow(PI, -1);
-    clockwiseOn = true;
-    counterClockwiseOn = true;
-    bgOn = true;
-    myBrush = 0;
-    strWeight = 1;
-
-    satf1 = 252;
-    sats1 = 252;
-    satf2 = 252;
-    sats2 = 252;
-    brif1 = 252;
-    bris1 = 252;
-    brif2 = 252;
-    bris2 = 252;
-    alphaf1 = 255;
-    alphas1 = 255;
-    alphaf2 = 255;
-    alphas2 = 255;
-    cShifts1 = 256/12;
-    cShifts2 = 3*256/12;
-    cShiftf2 = 256/6;
-
-    symRtn = new ParamRoutine(false, 1, 1211);
-    segRtn = new ParamRoutine(false, 0, 1);
-    sizeRtn = new ParamRoutine(false, 0, 1);
-    repRtn = new ParamRoutine(false, 0, 1);
-    rainbowRtn = new ParamRoutine(false, 0, 1);
-    tfRtn = new ParamRoutine(true, 2, 230);
-    rShiftRtn = new ParamRoutine(true, 4, 330);
-    rrzRtn = new ParamRoutine(false, 0, 1);
-    rrxRtn = new ParamRoutine(false, 1, 20);
-    
-  } else if (n==1) {
-    revs = 10;
-    symmetry = fib;//0.74;
-    segments = 48;
-    fibPow = 6.287;
-    rep = 7;
-    scl = 1;
-    //loops every 300 frames
-    loopEvery = 200;
-    rainbowRate = 1.481;//0.0024?
-    tf = 5.333;
-    repShift = 0.000001;
-    scalingOn = false;
-    rotateZOn = true;
-    rotateXOn = false;
-    scaleInc = 0.001;
-    rfacDt = 1/pow(fib,12);
-    rfacInit = 800;
-    rotRateZ = 0.12;
-    rotRateX = 0.318;
-    clockwiseOn = true;
-    counterClockwiseOn = true;
-    bgOn = true;
-    myBrush = 0;
-    strWeight = 1;
-
-    satf1 = 252;
-    sats1 = 252;
-    satf2 = 252;
-    sats2 = 252;
-    brif1 = 252;
-    bris1 = 252;
-    brif2 = 252;
-    bris2 = 252;
-    alphaf1 = 255;
-    alphas1 = 255;
-    alphaf2 = 255;
-    alphas2 = 255;
-    cShifts1 = 256/12;
-    cShifts2 = 3*256/12;
-    cShiftf2 = 256/6;
-
-    symRtn = new ParamRoutine(false, 1, 32.775);
-    segRtn = new ParamRoutine(false, 0, 1);
-    sizeRtn = new ParamRoutine(false, 1, 2.5);
-    repRtn = new ParamRoutine(false, 0, 1);
-    rainbowRtn = new ParamRoutine(false, 0, 1);
-    tfRtn = new ParamRoutine(false, 3, 25);
-    rShiftRtn = new ParamRoutine(true, 2, 23);
-    rrzRtn = new ParamRoutine(false, 0, 1);
-    rrxRtn = new ParamRoutine(false, 1, 20);
-    
-    myPalette.setPalette(13);
-    
-  } else if (n==19) {
-    revs = 10;
-    symmetry = 200;//PI;
-    segments = 18;
-    fibPow = 2;
-    rep = 1;
-    scl = 1;
-    rainbowRate = PI;
-    tf = PI;
-    repShift = fib;
-    scalingOn = false;
-    rotateZOn = true;
-    rotateXOn = true;
-    scaleInc = 0.001;
-    rfacDt = 1/pow(fib,10);
-    rfacInit = 1;
-    rotRateZ = pow(PI, -1);
-    rotRateX = pow(PI, -2.5);
-    clockwiseOn = false;
-    counterClockwiseOn = true;
-    bgOn = true;
-    myBrush = 1;
-  
-    satf1 = 252;
-    sats1 = 252;
-    satf2 = 252;
-    sats2 = 252;
-    brif1 = 252;
-    bris1 = 252;
-    brif2 = 252;
-    bris2 = 252;
-    alphaf1 = 255;
-    alphas1 = 252;
-    alphaf2 = 255;
-    alphas2 = 252;
-    cShifts1 = 256/2;
-    cShifts2 = 256/2;
-    cShiftf2 = 0;
-    
-    symRtn = new ParamRoutine(true, 3, 60);
-    segRtn = new ParamRoutine(false, 0, 100);
-    sizeRtn = new ParamRoutine(false, 1, 70);
-    repRtn = new ParamRoutine(false, 0, 300);
-    rainbowRtn = new ParamRoutine(false, 1, 450);
-    tfRtn = new ParamRoutine(false, 2, 130);
-    rShiftRtn = new ParamRoutine(false, 2, 330);
-    rrzRtn = new ParamRoutine(false, 1, 118);
-    rrxRtn = new ParamRoutine(false, 1, 121);
-    
-  } else if (n==102) {
-    revs = 10;
-    symmetry = PI;
-    segments = 121;
-    fibPow = 7;
-    rep = 1;
-    scl = 1;
-    rainbowRate = 36;
-    tf = 12;
-    repShift = fib;
-    scalingOn = false;
-    rotateZOn = true;
-    rotateXOn = true;
-    scaleInc = 0.001;
-    rfacDt = 1/pow(fib,10);
-    rfacInit = 1;
-    rotRateZ = 12;
-    rotRateX = pow(PI, -2.5);
-    clockwiseOn = true;
-    counterClockwiseOn = true;
-    bgOn = true;
-    myBrush = 1;
-  
-    satf1 = 252;
-    sats1 = 252;
-    satf2 = 252;
-    sats2 = 252;
-    brif1 = 252;
-    bris1 = 252;
-    brif2 = 252;
-    bris2 = 252;
-    alphaf1 = 255;
-    alphas1 = 255;
-    alphaf2 = 255;
-    alphas2 = 255;
-    cShifts1 = 0;
-    cShifts2 = 256/2;
-    cShiftf2 = 256/2;
-    
-    
-    symRtn = new ParamRoutine(false, 1, 60);
-    segRtn = new ParamRoutine(false, 0, 100);
-    sizeRtn = new ParamRoutine(false, 1, 70);
-    repRtn = new ParamRoutine(false, 0, 300);
-    rainbowRtn = new ParamRoutine(false, 1, 450);
-    tfRtn = new ParamRoutine(false, 2, 130);
-    rShiftRtn = new ParamRoutine(false, 2, 330);
-    rrzRtn = new ParamRoutine(false, 1, 118);
-    rrxRtn = new ParamRoutine(false, 1, 121);
-    
-  } else if (n==33) {
-    revs = 10;
-    symmetry = 6;
-    segments = 121;
-    fibPow = 4;
-    rep = 1;
-    scl = 1;
-    rainbowRate = 4;
-    tf = fib;
-    repShift = fib;
-    scalingOn = false;
-    rotateZOn = true;
-    rotateXOn = false;
-    scaleInc = 0.001;
-    rfacDt = 1/pow(fib,6);
-    rfacInit = 1;
-    rotRateZ = 0.1;
-    rotRateX = 0.00001;
-    clockwiseOn = true;
-    counterClockwiseOn = false;
-    bgOn = false;
-    myBrush = 1;
-  
-    satf1 = 252;
-    sats1 = 252;
-    satf2 = 252;
-    sats2 = 252;
-    brif1 = 252;
-    bris1 = 252;
-    brif2 = 252;
-    bris2 = 252;
-    alphaf1 = 255;
-    alphas1 = 255;
-    alphaf2 = 255;
-    alphas2 = 255;
-    cShifts1 = 0;
-    cShifts2 = 256/2;
-    cShiftf2 = 256/2;
-    
-    symRtn = new ParamRoutine(false, 1, 60);
-    segRtn = new ParamRoutine(false, 0, 100);
-    sizeRtn = new ParamRoutine(false, 1, 70);
-    repRtn = new ParamRoutine(false, 0, 300);
-    rainbowRtn = new ParamRoutine(false, 1, 450);
-    tfRtn = new ParamRoutine(false, 2, 130);
-    rShiftRtn = new ParamRoutine(false, 2, 330);
-    rrzRtn = new ParamRoutine(false, 1, 118);
-    rrxRtn = new ParamRoutine(false, 1, 121);
-    
-  } else if (n == 4) {//apple
-    
-    revs = 1;
-    symmetry = 24;
-    segments = 84;//96*4;
-    fibPow = 7;
-    rep = 24;
-    scl = 1;
-    rainbowRate = 3.7;
-    tf = 2.5 * 96 * 4 / segments;
-    repShift = 1;
-    scalingOn = false;
-    rotateZOn = true;
-    rotateXOn = false;
-    scaleInc = 0.001;
-    rfacDt = 1/50.0;
-    rfacInit = 10;
-    rotRateZ = 0.07;
-    rotRateX = 0.01;
-    clockwiseOn = true;
-    counterClockwiseOn = true;
-    bgOn = false;
-    myBrush = 0;
-    strWeight = 2;
-  
-    satf1 = 252;
-    sats1 = 252;
-    satf2 = 252;
-    sats2 = 252;
-    brif1 = 252;
-    bris1 = 252;
-    brif2 = 252;
-    bris2 = 252;
-    alphaf1 = 90;
-    alphas1 = 90;
-    alphaf2 = 90;
-    alphas2 = 90;
-    cShifts1 = 256/2;
-    cShifts2 = 0;
-    cShiftf2 = 256/2;
-    
-    symRtn = new ParamRoutine(false, 1, 60);
-    segRtn = new ParamRoutine(true, 0, 110);
-    sizeRtn = new ParamRoutine(false, 1, 70);
-    repRtn = new ParamRoutine(false, 0, 300);
-    rainbowRtn = new ParamRoutine(false, 1, 450);
-    tfRtn = new ParamRoutine(false, 2, 130);
-    rShiftRtn = new ParamRoutine(false, 2, 330);
-    rrzRtn = new ParamRoutine(false, 1, 118);
-    rrxRtn = new ParamRoutine(false, 1, 121);
-    
-    myPalette.setPalette(2);
-
-  } else if (n == 5) {
-    
-    revs = 5;
-    symmetry = 4.167;
-    segments = 145;
-    fibPow = 5;
-    rep = 12;
-    scl = 1;
-    rainbowRate = 1;
-    tf = 0.00001;
-    repShift = 0.01;
-    scalingOn = false;
-    rotateZOn = true;
-    rotateXOn = false;
-    scaleInc = 0.001;
-    rfacDt = 1/pow(fib,10);
-    rfacInit = 1;
-    rotRateZ = 0.05;
-    rotRateX = 0.00001;
-    clockwiseOn = true;
-    counterClockwiseOn = true;
-    bgOn = false;
-    myBrush = 0;
-    strWeight = 1;
-  
-    satf1 = 252;
-    sats1 = 252;
-    satf2 = 252;
-    sats2 = 252;
-    brif1 = 252;
-    bris1 = 252;
-    brif2 = 252;
-    bris2 = 252;
-    alphaf1 = 0;
-    alphas1 = 100;
-    alphaf2 = 0;
-    alphas2 = 100;
-    cShifts1 = 0;
-    cShifts2 = 0;
-    cShiftf2 = 256/2;
-    
-    symRtn = new ParamRoutine(false, 1, 60);
-    segRtn = new ParamRoutine(false, 0, 100);
-    sizeRtn = new ParamRoutine(false, 1, 70);
-    repRtn = new ParamRoutine(false, 0, 300);
-    rainbowRtn = new ParamRoutine(false, 1, 450);
-    tfRtn = new ParamRoutine(true, 2, 600);
-    rShiftRtn = new ParamRoutine(false, 2, 330);
-    rrzRtn = new ParamRoutine(false, 1, 118);
-    rrxRtn = new ParamRoutine(false, 1, 121);
-    
-    myPalette.setPalette(5);
-
-  } else if (n==6) {
-    
-    revs = 4;
-    symmetry = 2.618;
-    segments = 84;
-    rep = 5;
-    scl = 1;
-    rainbowRate = 3.5;
-    tf = 1.57;
-    repShift = 48;
-    scalingOn = false;
-    rotateZOn = true;
-    rotateXOn = false;
-    scaleInc = 0.001;
-    rfacDt = 1.0E-9;
-    rfacInit = 303;
-    rotRateZ = 0.2;
-    rotRateX = pow(PI, -1);
-    clockwiseOn = true;
-    counterClockwiseOn = true;
-    bgOn = true;
-    myBrush = 2;
-  
-    satf1 = 252;
-    sats1 = 252;
-    satf2 = 252;
-    sats2 = 252;
-    brif1 = 252;
-    bris1 = 252;
-    brif2 = 252;
-    bris2 = 252;
-    alphaf1 = 252;
-    alphas1 = 150;
-    alphaf2 = 252;
-    alphas2 = 150;
-    cShifts1 = 0;
-    cShifts2 = 0;
-    cShiftf2 = 0;
-    
-    symRtn = new ParamRoutine(false, 1, 60);
-    segRtn = new ParamRoutine(false, 0, 100);
-    sizeRtn = new ParamRoutine(false, 1, 70);
-    repRtn = new ParamRoutine(false, 0, 300);
-    rainbowRtn = new ParamRoutine(false, 1, 450);
-    tfRtn = new ParamRoutine(true, 5, 120);
-    rShiftRtn = new ParamRoutine(false, 2, 330);
-    rrzRtn = new ParamRoutine(false, 1, 118);
-    rrxRtn = new ParamRoutine(false, 1, 121);
-
-    myPalette.setPalette(3);
-  } else if (n==66) {
-    
-    revs = 4;
-    symmetry = 16.667;
-    segments = 1;//234;
-    fibPow = 3;
-    rep = 5;
-    scl = 1;
-    rainbowRate = 5.42;
-    tf = 0.122;
-    repShift = 1;
-    scalingOn = false;
-    rotateZOn = true;
-    rotateXOn = true;
-    scaleInc = 0.001;
-    rfacDt = 1/100.0;
-    rfacInit = 1;
-    rotRateZ = 0.07;
-    rotRateX = pow(PI, -1);
-    clockwiseOn = true;
-    counterClockwiseOn = true;
-    bgOn = true;
-    myBrush = 0;
-  
-    satf1 = 252;
-    sats1 = 252;
-    satf2 = 252;
-    sats2 = 252;
-    brif1 = 252;
-    bris1 = 252;
-    brif2 = 252;
-    bris2 = 252;
-    alphaf1 = 190;
-    alphas1 = 100;
-    alphaf2 = 190;
-    alphas2 = 100;
-    cShifts1 = 256/4;
-    cShifts2 = 3*256/4;
-    cShiftf2 = 256/2;
-    
-    symRtn = new ParamRoutine(false, 1, 60);
-    segRtn = new ParamRoutine(true, 0, 100);
-    sizeRtn = new ParamRoutine(false, 1, 70);
-    repRtn = new ParamRoutine(false, 0, 300);
-    rainbowRtn = new ParamRoutine(false, 1, 450);
-    tfRtn = new ParamRoutine(false, 2, 600);
-    rShiftRtn = new ParamRoutine(false, 2, 330);
-    rrzRtn = new ParamRoutine(false, 1, 118);
-    rrxRtn = new ParamRoutine(false, 1, 121);
-
-  } else if (n==77) {
-    
-    revs = 10;
-    symmetry = 200;
-    segments = 112;
-    fibPow = 5;
-    rep = 8;
-    scl = 1;
-    rainbowRate = fib;//0.0024?
-    tf = fib;
-    repShift = 0.01;
-    scalingOn = false;
-    rotateZOn = true;
-    rotateXOn = false;
-    scaleInc = 0.001;
-    rfacDt = 1/pow(fib,7);
-    rfacInit = 1;
-    rotRateZ = 0.05;
-    rotRateX = pow(PI, -1);
-    clockwiseOn = true;
-    counterClockwiseOn = true;
-    bgOn = false;
-    myBrush = 0;
-  
-    satf1 = 252;
-    sats1 = 252;
-    satf2 = 252;
-    sats2 = 252;
-    brif1 = 252;
-    bris1 = 252;
-    brif2 = 252;
-    bris2 = 252;
-    alphaf1 = 50;
-    alphas1 = 150;
-    alphaf2 = 50;
-    alphas2 = 150;
-    cShifts1 = 256/6;
-    cShifts2 = 256/2;
-    cShiftf2 = 256/3;
-  
-    symRtn = new ParamRoutine(true, 3, 60);
-    segRtn = new ParamRoutine(false, 0, 100);
-    sizeRtn = new ParamRoutine(false, 1, 70);
-    repRtn = new ParamRoutine(false, 0, 300);
-    rainbowRtn = new ParamRoutine(false, 1, 450);
-    tfRtn = new ParamRoutine(false, 2, 600);
-    rShiftRtn = new ParamRoutine(false, 2, 330);
-    rrzRtn = new ParamRoutine(false, 1, 118);
-    rrxRtn = new ParamRoutine(false, 1, 121);
-  
-  } else if (n==7) {
-    
-    revs = 10;
-    symmetry = 8.264;
-    segments = 84;
-    fibPow = 6;
-    rep = 20;
-    scl = 1;
-    rainbowRate = 2.22;//0.0024?
-    tf = 11.031;
-    repShift = 13.402;
-    scalingOn = false;
-    rotateZOn = true;
-    rotateXOn = false;
-    scaleInc = 0.001;
-    rfacDt = 1/pow(fib,7);
-    rfacInit = 100;
-    rotRateZ = 0.05;
-    rotRateX = pow(PI, -1);
-    clockwiseOn = true;
-    counterClockwiseOn = false;
-    bgOn = false;
-    myBrush = 0;
-    strWeight = 1;
-  
-    satf1 = 252;
-    sats1 = 252;
-    satf2 = 252;
-    sats2 = 252;
-    brif1 = 252;
-    bris1 = 252;
-    brif2 = 252;
-    bris2 = 252;
-    alphaf1 = 50;
-    alphas1 = 150;
-    alphaf2 = 50;
-    alphas2 = 150;
-    cShifts1 = 256/6;
-    cShifts2 = 256/2;
-    cShiftf2 = 256/3;
-  
-    symRtn = new ParamRoutine(false, 3, 60);
-    segRtn = new ParamRoutine(false, 0, 100);
-    sizeRtn = new ParamRoutine(false, 1, 70);
-    repRtn = new ParamRoutine(false, 0, 300);
-    rainbowRtn = new ParamRoutine(false, 1, 450);
-    tfRtn = new ParamRoutine(false, 2, 600);
-    rShiftRtn = new ParamRoutine(false, 2, 330);
-    rrzRtn = new ParamRoutine(false, 1, 118);
-    rrxRtn = new ParamRoutine(false, 1, 121);
-    
-    
-    myPalette.setPalette(6);
-  
-  } else if (n==8) {
-    
-    revs = 10;
-    symmetry = 2.71828;//PI;
-    segments = 72;
-    fibPow = 4;
-    rep = 1;
-    scl = 1;
-    rainbowRate = PI;
-    tf = PI;
-    repShift = fib;
-    scalingOn = false;
-    rotateZOn = true;
-    rotateXOn = true;
-    scaleInc = 0.001;
-    rfacDt = 1/pow(fib,10);
-    rfacInit = 1;
-    rotRateZ = pow(PI, -1);
-    rotRateX = pow(PI, -3);
-    clockwiseOn = false;
-    counterClockwiseOn = true;
-    bgOn = false;
-    myBrush = 1;
-  
-    satf1 = 252;
-    sats1 = 252;
-    satf2 = 252;
-    sats2 = 252;
-    brif1 = 252;
-    bris1 = 252;
-    brif2 = 252;
-    bris2 = 252;
-    alphaf1 = 22;
-    alphas1 = 252;
-    alphaf2 = 22;
-    alphas2 = 252;
-    cShifts1 = 256/2;
-    cShifts2 = 0;
-    cShiftf2 = 256/2;
-    
-    
-    symRtn = new ParamRoutine(false, 3, 60);
-    segRtn = new ParamRoutine(false, 0, 100);
-    sizeRtn = new ParamRoutine(false, 1, 70);
-    repRtn = new ParamRoutine(false, 0, 300);
-    rainbowRtn = new ParamRoutine(false, 1, 450);
-    tfRtn = new ParamRoutine(false, 2, 600);
-    rShiftRtn = new ParamRoutine(false, 2, 330);
-    rrzRtn = new ParamRoutine(false, 1, 118);
-    rrxRtn = new ParamRoutine(false, 1, 121);
-  
-  } else if (n==99) {
-    revs = 33;
-    symmetry = 1.5;//0.74;
-    segments = 48;
-    fibPow = 7;
-    rep = 7;
-    scl = 1;
-    //loops every 300 frames
-    loopEvery = 300;
-    tf = 256/float(segments);
-    repShift = 0;
-    rainbowRate = loopEvery / ((256.0*4) - repShift);//0.0024?
-    scalingOn = false;
-    rotateZOn = true;
-    rotateXOn = false;
-    scaleInc = 0.001;
-    rfacInit = 800;
-    //rfacDt = sqrt((rfacInit*(pow(fib, symmetry)-1))/(pow(fib, symmetry)*pow(loopEvery, 2)));
-    //rfacDt = ((pow(rfacInit*(pow(fib, symmetry)-1), 1/float(segments))))/float(loopEvery);
-    fr1 = 1800;
-    float n1 = rfacInit*(pow(fib, symmetry) - 1);
-    println(str(n1));
-    println(pow(fr1+loopEvery, segments));
-    println((pow(fib, symmetry))*(pow(fr1, segments)));
-    float n2 = pow(fr1+loopEvery, segments) - ((pow(fib, symmetry))*(pow(fr1, segments)));
-    println(n2);
-    rfacDt = pow(((rfacInit*(pow(fib, symmetry) -1))/(pow(fr1+loopEvery, segments)-(pow(fib, symmetry)*pow(fr1, segments)))), 1/float(segments)); //<>//
-    rfacDt = 0.000001;
-    rotRateZ = 720 / float(loopEvery*rep);
-    rotRateX = pow(PI, -1);
-    clockwiseOn = true;
-    counterClockwiseOn = true;
-    bgOn = true;
-    myBrush = 0;
-    strWeight = 1;
-
-    satf1 = 252;
-    sats1 = 252;
-    satf2 = 252;
-    sats2 = 252;
-    brif1 = 252;
-    bris1 = 252;
-    brif2 = 252;
-    bris2 = 252;
-    alphaf1 = 255;
-    alphas1 = 255;
-    alphaf2 = 255;
-    alphas2 = 255;
-    cShifts1 = 256/12;
-    cShifts2 = 3*256/12;
-    cShiftf2 = 256/6;
-
-    symRtn = new ParamRoutine(true, 1, loopEvery/(120.0));
-    segRtn = new ParamRoutine(false, 0, 1);
-    sizeRtn = new ParamRoutine(false, 1, loopEvery/(120.0));
-    repRtn = new ParamRoutine(false, 0, 1);
-    rainbowRtn = new ParamRoutine(false, 0, 1);
-    tfRtn = new ParamRoutine(false, 3, loopEvery/(120.0));
-    rShiftRtn = new ParamRoutine(true, 2, 2*loopEvery/(120.0));
-    rrzRtn = new ParamRoutine(false, 0, 1);
-    rrxRtn = new ParamRoutine(false, 1, 20);
-    
-    mode = "record";
-    goTime = false;
-    
-  } else if (n==9) {
-    revs = 22;
-    symmetry = fib;//0.74;
-    segments = 318;
-    fibPow = 6;
-    rep = 1;
-    scl = 1;
-    //loops every 300 frames
-    loopEvery = 900;
-    tf = 256/float(segments);
-    repShift = 0;
-    rainbowRate = loopEvery / ((256.0) - repShift);//0.0024?
-    scalingOn = false;
-    rotateZOn = true;
-    rotateXOn = false;
-    scaleInc = 0.001;
-    rfacInit = 303686;
-    //rfacDt = sqrt((rfacInit*(pow(fib, symmetry)-1))/(pow(fib, symmetry)*pow(loopEvery, 2)));
-    //rfacDt = ((pow(rfacInit*(pow(fib, symmetry)-1), 1/float(segments))))/float(loopEvery);
-    //fr1 = 1800;
-    //float n1 = rfacInit*(pow(fib, symmetry) - 1);
-    //println(str(n1));
-    //println(pow(fr1+loopEvery, segments));
-    //println((pow(fib, symmetry))*(pow(fr1, segments)));
-    //float n2 = pow(fr1+loopEvery, segments) - ((pow(fib, symmetry))*(pow(fr1, segments)));
-    //println(n2);
-    //rfacDt = pow(((rfacInit*(pow(fib, symmetry) -1))/(pow(fr1+loopEvery, segments)-(pow(fib, symmetry)*pow(fr1, segments)))), 1/float(segments));
-    rfacDt = 0.000000001;
-    rotRateZ = 7*720 / float(loopEvery*rep);
-    rotRateX = pow(PI, -1);
-    clockwiseOn = true;
-    counterClockwiseOn = true;
-    bgOn = true;
-    myBrush = 3;
-    strWeight = 9;
-
-    satf1 = 252;
-    sats1 = 252;
-    satf2 = 252;
-    sats2 = 252;
-    brif1 = 252;
-    bris1 = 252;
-    brif2 = 252;
-    bris2 = 252;
-    alphaf1 = 255;
-    alphas1 = 150;
-    alphaf2 = 255;
-    alphas2 = 150;
-    cShifts1 = 0;
-    cShifts2 = 0;
-    cShiftf2 = 0;
-
-    symRtn = new ParamRoutine(false, 1, loopEvery/(120.0));
-    segRtn = new ParamRoutine(false, 0, 1);
-    sizeRtn = new ParamRoutine(false, 1, loopEvery/(120.0));
-    repRtn = new ParamRoutine(false, 0, 1);
-    rainbowRtn = new ParamRoutine(false, 0, 1);
-    //tfRtn = new ParamRoutine(true, 5, loopEvery/(120.0));
-    tfRtn = new ParamRoutine(true, 5, 120);
-    rShiftRtn = new ParamRoutine(false, 2, 2*loopEvery/(120.0));
-    rrzRtn = new ParamRoutine(false, 0, 1);
-    rrxRtn = new ParamRoutine(false, 1, 20);
-    
-    
-  } else if (n==2) { //heartless machine
-    revs = 10;
-    symmetry = fib;//0.74;
-    segments = 48;
-    fibPow = 6.287;
-    rep = 7;
-    scl = 1;
-    //loops every 300 frames
-    loopEvery = 200;
-    rainbowRate = 1.481;//0.0024?
-    tf = 5.333;
-    repShift = 0.000001;
-    scalingOn = false;
-    rotateZOn = true;
-    rotateXOn = false;
-    scaleInc = 0.001;
-    rfacDt = 1/pow(fib,12);
-    rfacInit = 800;
-    rotRateZ = 0.12;
-    rotRateX = 0.318;
-    clockwiseOn = true;
-    counterClockwiseOn = true;
-    bgOn = true;
-    myBrush = 0;
-    strWeight = 1;
-    growthOn = true;
-
-    satf1 = 252;
-    sats1 = 252;
-    satf2 = 252;
-    sats2 = 252;
-    brif1 = 252;
-    bris1 = 252;
-    brif2 = 252;
-    bris2 = 252;
-    alphaf1 = 255;
-    alphas1 = 255;
-    alphaf2 = 255;
-    alphas2 = 255;
-    cShifts1 = 256/12;
-    cShifts2 = 3*256/12;
-    cShiftf2 = 256/6;
-
-    symRtn = new ParamRoutine(false, 1, 32.775);
-    segRtn = new ParamRoutine(false, 0, 1);
-    sizeRtn = new ParamRoutine(true, 1, 4.872);
-    repRtn = new ParamRoutine(false, 0, 1);
-    rainbowRtn = new ParamRoutine(false, 0, 1);
-    tfRtn = new ParamRoutine(true, 3, 85);
-    rShiftRtn = new ParamRoutine(true, 2, 31);
-    rrzRtn = new ParamRoutine(false, 0, 1);
-    rrxRtn = new ParamRoutine(false, 1, 20);
-    
-    myPalette.setPalette(1);
-    
-    mode = "live";
-    goTime = false;
-    
-  }  else if (n==3) { //why do you ask
-    revs = 33;//?
-    symmetry = 0.913;//0.74;
-    segments = 48;
-    fibPow = 6.287;
-    rep = 7;
-    scl = 1;
-    //loops every 300 frames
-    loopEvery = 200;
-    rainbowRate = 12;//0.0024?
-    tf = 5.333;
-    repShift = 0.163;
-    scalingOn = false;
-    rotateZOn = true;
-    rotateXOn = false;
-    scaleInc = 0.001;
-    rfacDt = 1/pow(fib,12);
-    rfacInit = 800;
-    rotRateZ = 0.12;
-    rotRateX = 0.318;
-    clockwiseOn = true;
-    counterClockwiseOn = true;
-    bgOn = false;
-    myBrush = 0;
-    strWeight = 1;
-
-    satf1 = 252;
-    sats1 = 252;
-    satf2 = 252;
-    sats2 = 252;
-    brif1 = 252;
-    bris1 = 252;
-    brif2 = 252;
-    bris2 = 252;
-    alphaf1 = 0;
-    alphas1 = 255;
-    alphaf2 = 0;
-    alphas2 = 255;
-    cShifts1 = 256/12;
-    cShifts2 = 3*256/12;
-    cShiftf2 = 256/6;
-
-    symRtn = new ParamRoutine(false, 1, 32.775);
-    segRtn = new ParamRoutine(true, 2, 97);
-    sizeRtn = new ParamRoutine(true, 1, 14.872);
-    repRtn = new ParamRoutine(true, 1, 156);
-    rainbowRtn = new ParamRoutine(false, 0, 1);
-    tfRtn = new ParamRoutine(true, 5, 328);
-    rShiftRtn = new ParamRoutine(false, 2, 11);
-    rrzRtn = new ParamRoutine(false, 0, 1);
-    rrxRtn = new ParamRoutine(false, 1, 20);
-    
-    myPalette.setPalette(14);
-    
-    mode = "live";
-    goTime = false;
-    
-  }  else if (n==981) { //why do you ask
-    revs = 33;//?
-    symmetry = 5;//0.74;
-    segments = 84;
-    fibPow = 6.287;
-    rep = 6;
-    scl = 1;
-    //loops every 300 frames
-    loopEvery = 60*30;
-    rainbowRate = 12;//0.0024?
-    tf = 5.333;
-    repShift = 0.00163;
-    scalingOn = false;
-    rotateZOn = false;
-    rotateXOn = false;
-    scaleInc = 0.001;
-    rfacDt = 1/pow(fib,7);
-    rfacInit = 1;
-    rotRateZ = 0.12;
-    rotRateX = 0.318;
-    clockwiseOn = true;
-    counterClockwiseOn = true;
-    bgOn = false;
-    myBrush = 0;
-    strWeight = 1;
-
-    satf1 = 252;
-    sats1 = 252;
-    satf2 = 252;
-    sats2 = 252;
-    brif1 = 252;
-    bris1 = 252;
-    brif2 = 252;
-    bris2 = 252;
-    alphaf1 = 255;
-    alphas1 = 255;
-    alphaf2 = 255;
-    alphas2 = 255;
-    cShifts1 = 256/12;
-    cShifts2 = 256/12;
-    cShiftf2 = 0;
-
-    symRtn = new ParamRoutine(true, 5, 59*30);
-    segRtn = new ParamRoutine(false, 2, 97);
-    sizeRtn = new ParamRoutine(false, 1, 14.872);
-    repRtn = new ParamRoutine(false, 1, 156);
-    rainbowRtn = new ParamRoutine(false, 0, 1);
-    tfRtn = new ParamRoutine(true, 10, 60);
-    rShiftRtn = new ParamRoutine(false, 2, 11);
-    rrzRtn = new ParamRoutine(false, 0, 1);
-    rrxRtn = new ParamRoutine(false, 1, 20);
-    
-    myPalette.setPalette(1);
-    
-    //mode = "live";
-    goTime = false;
-    
+void loadImages2(){
+  for (int i=0; i<256; i++){
+    images.add(loadImage("recorded1/frame" + nf(i, 5) + ".jpg"));
+    println("loading recorded1/frame" + nf(i, 5) + ".jpg");
   }
-  
 }
 
 void saveParams() {
@@ -1299,8 +467,8 @@ void brush(float x, float y, float s) {
     //textFont(mono);
     //text("@ starchildart", x, y);
     ellipse(x, y, s, s);
-  } else if (myBrush <= 10) {
-    texnGon(myBrush, x, y, s);
+  } else if (myBrush <= 100) {
+    nGon(myBrush, x, y, s);
   }
 }
 
@@ -1316,348 +484,72 @@ void nGon(int n, float x, float y, float r) {
   popMatrix();
 }
 
-
-void texnGon(int n, float x, float y, float r) {
-  pushMatrix();
-    translate(x, y);
+void texnGon(int n, float x, float y, float r, int im, color f) {
+  //pushMatrix();
+    //translate(x, y);
     textureMode(NORMAL);
     //img.resize(int(r),int(r));
     beginShape();
-    texture(img);
+    if (withAlpha){
+      tint(f, (f >> 16) & 0xFF);
+    } else {
+      tint(f);
+    }
+    texture(images.get(im));
     for (int i=0; i<n; i++) {
       float theta = i * 2 * PI / float(n);
-      vertex(r*sin(theta), r*cos(theta), 0.5 + sin(theta), 0.5 + cos(theta));
+      vertex(x+r*sin(theta), y+r*cos(theta), 0.5 + 1.5*sin(theta)/sqrt(3), 0.5 + 1.5*cos(theta)/sqrt(3));
+      //0, 1; -0.5, -0.866
     }
     endShape(CLOSE);
-  popMatrix();
+  //popMatrix();
 }
 
-public class ParamRoutine {
-  boolean enabled;
-  int mode;
-  float speed, prevVal;
-  int nModes;
-  Easer easer;
-    ParamRoutine (boolean on, int m, float s) {
-      this.enabled = on;
-      this.mode = m;
-      this.speed = s;
-      this.nModes = 13;
-      this.prevVal = -99;
-      this.easer = new Easer(1.1,  1);
-    }
+void newTexnGon(int n, float x, float y, float r, PImage imggg, color f) {
+  //pushMatrix();
+    //translate(x, y);
+    textureMode(NORMAL);
+    //img.resize(int(r),int(r));
+    beginShape();
+    // if (withAlpha){
+    //   tint(f, (f >> 16) & 0xFF);
+    // } else {
+    //   tint(f);
+    // }
     
-    public void setEaserValue(float val) {
-      easer.setValue(val);
+    texture(imggg);
+    for (int i=0; i<n; i++) {
+      float theta = i * 2 * PI / float(n);
+      vertex(x+r*sin(theta), y+r*cos(theta), 0.5 + sin(theta)/sqrt(3), 0.5 + cos(theta)/sqrt(3));
+      //0, 1; -0.5, -0.866
     }
-
-    int getInt(int valIn) {
-      int valOut = valIn;
-      if (mode==0) {
-        if (fTime % max(1, abs(int(speed))) == 0) {
-          return int(valIn + int(speed/abs(speed)));
-        }
-      } else if (mode == 1) {
-        float t = fTime/(60*2*this.speed);
-        valOut = int(map(sin(6*PI/10 + t*PI*10), -1, 1, 1, 18));
-      } else if (mode == 2) { //0 - 255 every [speed] seconds
-        float t = fTime/(60*2*this.speed);
-        valOut = int(map(sin(6*PI/10 + t*PI*2), -1, 1, 1, 255));
-      } else if (mode == 6) { //mousex
-        valOut = int(map(mouseX, 0, width, 0, 150));
-      }
-      return valOut;
-    }
-
-    float getFloat(float valIn) {
-      float valOut = valIn;
-      if (mode == 0) {
-        valOut = pow(valIn, speed);
-      } else if (mode == 1) {
-        float t = fTime/(60*2*this.speed);
-        valOut = map(sin(PI/2 + t*PI*2), -1, 1, 0.3, 7.5);
-      } else if (mode == 2) { //0 - 255 every [speed] seconds
-        float t = fTime/(60*2*this.speed);
-        valOut = map(sin(3*PI/2 + t*PI*2), -1, 1, 0, 255);
-      } else if (mode == 3) { //0 - 255 every [speed] seconds
-        float t = fTime/(60*2*this.speed);
-        valOut = map(sin(3*PI/2 + t*PI*2), -1, 1, 0, 255/2);
-      } else if (mode == 4) { //0 - 255/16 every [speed] seconds
-        float t = fTime/(60*2*this.speed);
-        valOut = map(sin(3*PI/2 + t*PI*2), -1, 1, 0, 12);
-      } else if (mode == 55) { //0 - 255/16 every [speed] seconds
-        float t = fTime/(60*2*this.speed);
-        valOut = map(sin(3*PI/2 + t*PI*2), -1, 1, 0, 3);
-      } else if (mode == 56) {
-        if (valOut > 100) {
-          valOut *= 0.9996;
-        } else if (valOut > 50) {
-          valOut *= 0.9997;
-        } else if (valOut > 20) {
-          valOut *= 0.9998;
-        } else if (valOut > 10) {
-          valOut *= 0.99981;
-        } else if (valOut > 5) {
-          valOut *= 0.99981;
-        } else if (valOut > 2) {
-          valOut *= 0.99981;
-        } else if (valOut > 1) {
-          valOut *= 0.99981;
-        }  else if (valOut > 0.5) {
-          valOut *= 0.999812;
-        }
-      } else if (mode == 5) { //mousex
-        valOut = map((fTime), 0, this.speed, 9, 0.08);
-        valOut = pow(valOut, 1/3.0);
-      } else if (mode == 6) { //mousex
-        valOut = map(mouseX, 0, width, 0, 15);
-      } else if (mode == 7) { //0 - 255 every [speed] seconds
-        float t = fTime/(60*2*this.speed);
-        valOut = map(sin(3*PI/2 + t*PI*2), -1, 1, 40, 295);
-      } else if (mode == 8) { //0 - 255 every [speed] seconds
-        float t = fTime/(60*2*this.speed);
-        valOut = map(sin(3*PI/2 + t*PI*2), -1, 1, 65, 295);
-      } else if (mode == 9) { //7 -> 0 log
-        //float t = (1 + fTime)/(this.speed);
-        //println(log(t));
-        //valOut = map(log(t), log(1/(this.speed)), 100000, 7, 0);
-        float t = (fTime)/(this.speed);
-        valOut = pow(7, 1-t);
-      } else if (mode == 10) {
-        float th = (fTime/(30.0 * this.speed)) * 2 * PI ;
-        float r = 0.2;
-        float x = r * cos(th);
-        float y = r * sin(th);
-        //println(x);
-        valOut = map((float)osNoise.eval(x, y), -1, 1, (256/2), (256*1.5));
-        //println(valOut);
-      } else if (mode == 11) {
-        float th = (fTime/(30 * this.speed)) * 2 * PI ;
-        float r = 3;
-        float x = r * cos(th);
-        float y = r * sin(th);
-        valOut = map((float)osNoise.eval(x, y), -1, 1, -4, 8);
-      } else if (mode == 12) {
-        float th = (fTime/(30 * this.speed)) * 2 * PI ;
-        float r = 2;
-        float x = 4 + r * cos(th);
-        float y = 4 + r * sin(th);
-        valOut = map((float)osNoise.eval(x, y), -1, 1, 0, 4);
-      } else if (mode == 342) { //Green Light Project
-        valOut = easer.getValue(fTime);
-      }
-      //if (prevVal == -99) {
-      //  prevVal = valOut;
-      //}
-      //float v = lerp(prevVal, valOut, 0.001);
-      //prevVal = v;
-      return valOut;
-    }
-
-    void toggle() {
-      this.enabled = !this.enabled;
-    }
-
-    void nextMode() {
-      this.mode = (this.mode + 1) % this.nModes;
-    }
-    
-    void setMode(int n) {
-      this.mode = n;
-    }
-
-    void setSpeed(float speedIn) {
-      this.speed = speedIn;
-    }
-
-    void incSpeed(float fac) {
-      this.speed *= fac;
-    }
-
-    void decSpeed(float fac) {
-      this.speed /= fac;
-    }
-
-    void reverse() {
-      this.speed = -this.speed;
-    }
+    endShape(CLOSE);
+  //popMatrix();
 }
 
-void runParamRoutines() {
-  //symRtn, segRtn, sizeRtn, repRtn, rainbowRtn, tfRtn, rShiftRtn, rrzRtn, rrxRtn
-  
-  //loadEvents();
-  
-  if (symRtn.enabled) {
-    symmetry = symRtn.getFloat(symmetry);
-  }
-  if (segRtn.enabled) {
-    segments = segRtn.getInt(segments);
-  }
-  if (sizeRtn.enabled) {
-    fibPow = sizeRtn.getFloat(fibPow);
-  }
-  if (repRtn.enabled) {
-    rep = repRtn.getInt(rep);
-  }
-  if (rainbowRtn.enabled) {
-    rainbowRate = rainbowRtn.getFloat(rainbowRate);
-  }
-  if (tfRtn.enabled) {
-    tf = tfRtn.getFloat(tf);
-  }
-  if (rShiftRtn.enabled) {
-    repShift = rShiftRtn.getFloat(repShift);
-  }
-  if (rrzRtn.enabled) {
-    xmag = rrzRtn.getFloat(xmag);
-  }
-  if (rrxRtn.enabled) {
-    ymag = rrxRtn.getFloat(ymag);
-  }
-  //if (rfacRtn.enabled) {
-  //  rfac = rfacRtn.getFloat(rfac);
-  //}
+void new2TexnGon(int n, float x, float y, float r, int im, color f) {
+  //pushMatrix();
+    //translate(x, y);
+    textureMode(NORMAL);
+    //img.resize(int(r),int(r));
+    beginShape();
+    // if (withAlpha){
+    //   tint(f, (f >> 16) & 0xFF);
+    // } else {
+    //   tint(f);
+    // }
+    
+    // println("loading image " + im);
+    texture(images.get(im));
+    for (int i=0; i<n; i++) {
+      float theta = i * 2 * PI / float(n);
+      vertex(x+r*sin(theta), y+r*cos(theta), 0.5 + sin(theta)/sqrt(3), 0.5 + cos(theta)/sqrt(3));
+      //0, 1; -0.5, -0.866
+    }
+    endShape(CLOSE);
+  //popMatrix();
 }
 
-
-float tEnd = 2*60*60;
-float t0 = 0.25*tEnd;
-float t1 = t0 + 2*60;
-float t2 = t1 + 10*60;
-float t3 = 0.5 * tEnd;
-float t4 = 0.7 * tEnd;
-float t5 = 0.77 * tEnd;
-float t6 = 0.8 * tEnd;
-float t7 = 0.83 * tEnd;
-float t8 =  0.87 * tEnd;
-float t9 =  0.9 * tEnd;
-float t10 =  0.95 * tEnd;
-boolean t1Hit = false;
-boolean t2Hit = false;
-boolean t3Hit = false;
-boolean t4Hit = false;
-boolean t5Hit = false;
-boolean t6Hit = false;
-boolean t7Hit = false;
-boolean t8Hit = false;
-boolean t9Hit = false;
-boolean t10Hit = false;
-
-void loadEvents() {
-  if (starting) {
-    starting = false;
-    println(millis()/1000.);
-    println(restart);
-    println(mode);
-    symRtn.easer.setValue(symmetry);
-    segRtn.easer.setValue(segments);
-    sizeRtn.easer.setValue(fibPow);
-    repRtn.easer.setValue(rep);
-    rainbowRtn.easer.setValue(rainbowRate);
-    tfRtn.easer.setValue(3);
-    rShiftRtn.easer.setValue(repShift);
-    rrzRtn.easer.setValue(-xmag);
-    rrxRtn.easer.setValue(-ymag);
-    rfacRtn.easer.setValue(1);
-    
-    
-    symRtn.easer.setValue(900);
-    symRtn.easer.setEaseMode(2);
-    symRtn.easer.setEaseByTarget(0, fTime, t0 - 1);    
-    rfacRtn.easer.setValue(1);
-    rfacRtn.easer.setEaseMode(0);
-    rfacRtn.easer.setEaseByTarget(1200, fTime, t0 - 1);    
-    rrzRtn.easer.setEaseMode(0);
-    rrzRtn.easer.setEaseByTarget(6*PI, fTime, tEnd);
-  }
-  
-  if (fTime >= t1 && !t1Hit) {
-    t1Hit = true;
-    println("t1");
-    symRtn.easer.setEaseMode(8);
-    symRtn.easer.setEaseByTarget(5, fTime, t2 - t1);  
-    rfacRtn.easer.setEaseByTarget(3000*6, fTime, tEnd);    
-  }
-  
-  if (fTime >= t2 && !t2Hit) {
-    t2Hit = true;
-    println("t2");
-    symRtn.easer.setEaseMode(3);
-    symRtn.easer.setEaseByTarget(1, fTime, t3 - t2);  
-    
-    tfRtn.easer.setEaseMode(3);
-    tfRtn.easer.setEaseByTarget(17, fTime, t3 - t2);
-  }
-  
-  if (fTime >= t3 && !t3Hit) {
-    t3Hit = true;
-    println("t3");
-    rShiftRtn.easer.setEaseMode(2);
-    rShiftRtn.easer.setEaseByTarget(255, fTime, tEnd - t3);
-  }
-  
-  if (fTime >= t4 && !t4Hit) {
-    t4Hit = true;
-    println("t4");
-    symRtn.easer.setEaseMode(10);
-    symRtn.easer.setEaseByTarget(20, fTime, 0.07*tEnd);
-  }
-  
-  if (fTime >= t5 && !t5Hit) {
-    t5Hit = true;
-    println("t5");
-    rfacRtn.easer.setEaseMode(3);
-    rfacRtn.easer.setEaseByTarget(100, fTime, t6 - t5);
-    symRtn.easer.setEaseMode(3);
-    symRtn.easer.setEaseByTarget(1, fTime, t6 - t5);
-  }
-  
-  if (fTime >= t6 && !t6Hit) {
-    t6Hit = true;
-    println("t6");
-    rfacRtn.easer.setEaseMode(0);
-    rfacRtn.easer.setEaseByTarget(1000, fTime, t7 - t6);
-    symRtn.easer.setEaseMode(0);
-    symRtn.easer.setEaseByTarget(10, fTime, t7 - t6);
-  }
-  
-  if (fTime >= t7 && !t7Hit) {
-    t7Hit = true;
-    println("t7");
-    rfacRtn.easer.setEaseMode(0);
-    rfacRtn.easer.setEaseByTarget(100, fTime, t8 - t7);
-    symRtn.easer.setEaseMode(0);
-    symRtn.easer.setEaseByTarget(40, fTime, t8 - t7);
-  }
-  
-  if (fTime >= t8 && !t8Hit) {
-    t8Hit = true;
-    println("t8");
-    rrzRtn.easer.setEaseMode(1);
-    rrzRtn.easer.setEaseByTarget(12*PI, fTime, tEnd - t8);
-    tfRtn.easer.setEaseMode(0);
-    tfRtn.easer.setEaseByTarget(255, fTime, tEnd-t8);
-    rShiftRtn.easer.setEaseMode(3);
-    rShiftRtn.easer.setEaseByTarget(0.001, fTime, tEnd-t8);
-  }
-  
-  if (fTime >= t9 && !t9Hit) {
-    t9Hit = true;
-    println("t9");
-    rfacRtn.easer.setEaseMode(1);
-    rfacRtn.easer.setEaseByTarget(2200, fTime, tEnd - t9);
-    symRtn.easer.setEaseMode(3);
-    symRtn.easer.setEaseByTarget(0, fTime, tEnd - t9);
-  }
-  
-    
-  
-  if (fTime >= tEnd){
-    //exit();
-  }
-  
-}
 
 public void keyReleased() {
   if (key == CODED) {
@@ -1710,12 +602,17 @@ void keyPressed() {
         loadParameters(0);
         break;
       case('!'):
-        goTime = true;
-        restart = frameCount;
+        // goTime = true;
+        // restart = frameCount;
         //goCount++;
+        myRecorder.startRecording();
       break;
       case('@'):
       record = false;
+      break;
+      case('#'):
+        myRecorder.startRecording();
+        restart = frameCount;
       break;
       case('"'):
       save("savedImage"+int(random(10000))+".tif");
@@ -1786,6 +683,24 @@ void keyPressed() {
       } else {
         restart = millis();
       }
+      loadParameters(342);
+      t1Hit = false;
+      t2Hit = false;
+      t3Hit = false;
+      t4Hit = false;
+      t5Hit = false;
+      t6Hit = false;
+      t7Hit = false;
+      t8Hit = false;
+      t9Hit = false;
+      t10Hit = false;
+      tStart2Hit = false;
+      t11Hit = false;
+      t12Hit = false;
+      t13Hit = false;
+      t14Hit = false;
+      t15Hit = false;
+      starting = true;
       //record = true;
       //symmetry = 200;
       break;
@@ -1885,7 +800,43 @@ void keyPressed() {
         saveParams();
         break;
       case(' '):
-        fftOn = !fftOn;
+        //fftOn = !fftOn;
+        println("!!! " + (t46 - fTime));
+        break;
+      case('?'):
+        if (mode == "live"){
+            restart = millis() - int(tStart2 * 1000/60.0);
+        } else {
+          restart = frameCount - int(tStart2);
+        }
+        tStart2Hit = false;
+        doStart2();
+        break;
+      case('/'):
+        //tStart3Hit = false;
+        //doStart3();
+        //if (mode == "live"){
+        //    restart = millis() - int(tStart3 * 1000/60.0);
+        //} else {
+        //  restart = frameCount - int(tStart3);
+        //}
+        //break;
+        //tStart3Hit = false;
+        if (mode == "live"){
+            restart = millis() - int(t29 * 1000/60.0);
+        } else {
+          restart = frameCount - int(t29);
+        }
+        doT29();
+        break;
+      case('|'):
+        if (mode == "live"){
+            restart = millis() - int(t31 * 1000/60.0);
+        } else {
+          restart = frameCount - int(t46);
+        }
+        //t31Hit = false;
+        //doT31();
         break;
     }
   } else if (drawControls) {
@@ -2326,7 +1277,7 @@ String paramRtnStr(ParamRoutine p) {
 }
 
 void displayParameters() {
-  int tab = (width-715)/2;
+  int tab = (width-605)/2;
   int x = tab;
   //int y = height - 150;
   int y = height - 30;
@@ -2335,15 +1286,49 @@ void displayParameters() {
   camera();
   hint(DISABLE_DEPTH_TEST);
   noLights();
+  
+  
+  if (frameOn) {
+    pushStyle();
+    fill(0,0,0);
+    noStroke();
+    float h = height/2.0;
+    float r = 2 * h / sqrt(3);
+    float yyy;
+    float xxx;
+    float th = 2*PI/6.0;
+    beginShape();
+    vertex(0,0,0);
+    vertex(0, height, 0);
+    for (int i=2; i<5; i++){
+      yyy = (height/2.0) + r * sin(i*th);
+      xxx = (width/2.0) + r * cos(i*th);
+      vertex(xxx, yyy, 0);
+    }
+    endShape(CLOSE);
+    beginShape();
+    vertex(width, height, 0);
+    vertex(width,0,0);
+    for (int i=5; i<8; i++){
+      yyy = (height/2.0) + r * sin(i*th);
+      xxx = (width/2.0) + r * cos(i*th);
+      vertex(xxx, yyy, 0);
+    }
+    endShape(CLOSE);
+    popStyle();
+  }
+  
+  
+  
   textMode(MODEL);
   rectMode(CORNER);
   fill(170, 0, 0);
   noStroke();
-  rect(x-15, y-15, 715, 20);
+  rect(x-15, y-15, 635, 20);
   fill(170, 0, 255);
   textFont(mono);
-  String params = "";
-  params += " " + int(frameRate) + " ";
+  String params = "  ";
+  //params += " " + int(frameRate) + " ";
   //params += "  fTime " + fTime;
   //params += padString(fmtStr((fullTime) - (frameCount / (60.0 * 60.0)), 3), 7);
   if (paramRoutineControls) {
@@ -2366,10 +1351,11 @@ void displayParameters() {
     params += "   " + padString(fmtStr(cShifts2, 0), 3);
     params += " " + padString(str(alphas2), 3);
     params += "   " + padString(str(strWeight), 3);
+    params += "   " + padString(str(myPalette.current), 3);
     
   } else {
     params += " " + padString(str(int(rfac)), 7);
-    params += " " + padString(str(revs), 7);
+    //params += " " + padString(str(revs), 7);
     params += " " + padString(fmtStr(symmetry, 3), 7);
     params += " " + padString(str(segments), 7);
     params += " " + padString(fmtStr(fibPow, 3), 7);
@@ -2378,13 +1364,156 @@ void displayParameters() {
     params += " " + padString(fmtStr(tf, 3), 7);
     params += " " + padString(fmtStr(repShift, 3), 7);
     //params += " " + rfacInit;
-    params += " " + padString(fmtStr(rfacDt, 3), 7);
-    params += " " + padString(fmtStr(rotRateZ, 3), 7);
-    params += " " + padString(fmtStr(rotRateX, 3), 7);
+    //params += " " + padString(fmtStr(rfacDt, 3), 7);
+    params += " " + padString(fmtStr(rrzRtn.easer.getValue(fTime), 3), 7);
+    params += " " + padString(fmtStr(rrxRtn.easer.getValue(fTime), 3), 7);
+    params += " " + padString(str(tn), 7);
+    //params += " " + padString(fmtStr(rotRateZ, 3), 7);
+    //params += " " + padString(fmtStr(rotRateX, 3), 7);
 
   }
   text(params, x, y); 
+  
+  
 
   hint(ENABLE_DEPTH_TEST);
   popStyle();
 }
+
+
+//float tEnd = 2*60*60;
+//float t0 = 0.25*tEnd;
+//float t1 = t0 + 2*60;
+//float t2 = t1 + 10*60;
+//float t3 = 0.5 * tEnd;
+//float t4 = 0.7 * tEnd;
+//float t5 = 0.77 * tEnd;
+//float t6 = 0.8 * tEnd;
+//float t7 = 0.83 * tEnd;
+//float t8 =  0.87 * tEnd;
+//float t9 =  0.9 * tEnd;
+//float t10 =  0.95 * tEnd;
+//boolean t1Hit = false;
+//boolean t2Hit = false;
+//boolean t3Hit = false;
+//boolean t4Hit = false;
+//boolean t5Hit = false;
+//boolean t6Hit = false;
+//boolean t7Hit = false;
+//boolean t8Hit = false;
+//boolean t9Hit = false;
+//boolean t10Hit = false;
+
+//if (starting) {
+//    starting = false;
+//    println(millis()/1000.);
+//    println(restart);
+//    println(mode);
+//    symRtn.easer.setValue(symmetry);
+//    segRtn.easer.setValue(segments);
+//    sizeRtn.easer.setValue(fibPow);
+//    repRtn.easer.setValue(rep);
+//    rainbowRtn.easer.setValue(rainbowRate);
+//    tfRtn.easer.setValue(3);
+//    rShiftRtn.easer.setValue(repShift);
+//    rrzRtn.easer.setValue(-xmag);
+//    rrxRtn.easer.setValue(-ymag);
+//    rfacRtn.easer.setValue(1);
+    
+    
+//    symRtn.easer.setValue(900);
+//    symRtn.easer.setEaseMode(2);
+//    symRtn.easer.setEaseByTarget(0, fTime, t0 - 1);    
+//    rfacRtn.easer.setValue(1);
+//    rfacRtn.easer.setEaseMode(0);
+//    rfacRtn.easer.setEaseByTarget(1200, fTime, t0 - 1);    
+//    rrzRtn.easer.setEaseMode(0);
+//    rrzRtn.easer.setEaseByTarget(6*PI, fTime, tEnd);
+//  }
+  
+//  if (fTime >= t1 && !t1Hit) {
+//    t1Hit = true;
+//    println("t1");
+//    symRtn.easer.setEaseMode(8);
+//    symRtn.easer.setEaseByTarget(5, fTime, t2 - t1);  
+//    rfacRtn.easer.setEaseByTarget(3000*6, fTime, tEnd);    
+//  }
+  
+//  if (fTime >= t2 && !t2Hit) {
+//    t2Hit = true;
+//    println("t2");
+//    symRtn.easer.setEaseMode(3);
+//    symRtn.easer.setEaseByTarget(1, fTime, t3 - t2);  
+    
+//    tfRtn.easer.setEaseMode(3);
+//    tfRtn.easer.setEaseByTarget(17, fTime, t3 - t2);
+//  }
+  
+//  if (fTime >= t3 && !t3Hit) {
+//    t3Hit = true;
+//    println("t3");
+//    rShiftRtn.easer.setEaseMode(2);
+//    rShiftRtn.easer.setEaseByTarget(255, fTime, tEnd - t3);
+//  }
+  
+//  if (fTime >= t4 && !t4Hit) {
+//    t4Hit = true;
+//    println("t4");
+//    symRtn.easer.setEaseMode(10);
+//    symRtn.easer.setEaseByTarget(20, fTime, 0.07*tEnd);
+//  }
+  
+//  if (fTime >= t5 && !t5Hit) {
+//    t5Hit = true;
+//    println("t5");
+//    rfacRtn.easer.setEaseMode(3);
+//    rfacRtn.easer.setEaseByTarget(100, fTime, t6 - t5);
+//    symRtn.easer.setEaseMode(3);
+//    symRtn.easer.setEaseByTarget(1, fTime, t6 - t5);
+//  }
+  
+//  if (fTime >= t6 && !t6Hit) {
+//    t6Hit = true;
+//    println("t6");
+//    rfacRtn.easer.setEaseMode(0);
+//    rfacRtn.easer.setEaseByTarget(1000, fTime, t7 - t6);
+//    symRtn.easer.setEaseMode(0);
+//    symRtn.easer.setEaseByTarget(10, fTime, t7 - t6);
+//  }
+  
+//  if (fTime >= t7 && !t7Hit) {
+//    t7Hit = true;
+//    println("t7");
+//    rfacRtn.easer.setEaseMode(0);
+//    rfacRtn.easer.setEaseByTarget(100, fTime, t8 - t7);
+//    symRtn.easer.setEaseMode(0);
+//    symRtn.easer.setEaseByTarget(40, fTime, t8 - t7);
+//  }
+  
+//  if (fTime >= t8 && !t8Hit) {
+//    t8Hit = true;
+//    println("t8");
+//    rrzRtn.easer.setEaseMode(1);
+//    rrzRtn.easer.setEaseByTarget(12*PI, fTime, tEnd - t8);
+//    tfRtn.easer.setEaseMode(0);
+//    tfRtn.easer.setEaseByTarget(255, fTime, tEnd-t8);
+//    rShiftRtn.easer.setEaseMode(3);
+//    rShiftRtn.easer.setEaseByTarget(0.001, fTime, tEnd-t8);
+//  }
+  
+//  if (fTime >= t9 && !t9Hit) {
+//    t9Hit = true;
+//    println("t9");
+//    rfacRtn.easer.setEaseMode(1);
+//    rfacRtn.easer.setEaseByTarget(2200, fTime, tEnd - t9);
+//    symRtn.easer.setEaseMode(3);
+//    symRtn.easer.setEaseByTarget(0, fTime, tEnd - t9);
+//  }
+  
+    
+  
+//  if (fTime >= tEnd){
+//    //exit();
+//  }
+
+//an artist statement is a self reflection
