@@ -26,14 +26,17 @@ int recordStart = 0;
 //color[] palette;
 Palette myPalette;
 String mode;
-ParamRoutine symRtn, segRtn, sizeRtn, repRtn, rainbowRtn, tfRtn, rShiftRtn, rrzRtn, rrxRtn;
+ParamRoutine symRtn, segRtn, sizeRtn, repRtn, rainbowRtn, tfRtn, rShiftRtn, rrzRtn, rrxRtn, rfacRtn;
 int nSaves = 0;
-
+OpenSimplexNoise osNoise;
+import AULib.*;
+boolean starting = true;
+PImage img;
 
 void setup() {
-  fullScreen(P3D, SPAN);
+  //fullScreen(P3D, SPAN);
   //fullScreen(P3D, 2);
-  //size(800, 800, P3D);
+  size(1820, 980, P3D);
   background(0, 0, 0);
   noCursor();
   float fov = PI/3.0;
@@ -56,27 +59,32 @@ void setup() {
   mouseCameraOn = false;
   dragOn = false;
   cursorOn = false;
-  growthOn = true;
+  growthOn = false;
   mSize = false;
   
   myPalette = new Palette();
-  loadParameters(981);
-  mode = "live";
+  //mode = "record";
+  loadParameters(2);
   fftOn = false;
   
   if (fftOn) {
     fftSetup();
   }
+  
+  osNoise = new OpenSimplexNoise((long)random(10));
+  
+  img = loadImage("GRETA.jpg");
 
 }  
 
 void draw() {
   
+  //println(mode);
+  
   if (fftOn) {
     //do fft analysis
     fftLoop();
   }
-
   if (mode == "live") {
     fTime = (millis() - restart)*60/1000;
   } else {
@@ -187,17 +195,17 @@ void draw() {
   //Recording biz
   //if (frameCount % 2 == 0) {
     //if (record && frameCount % 3 == 0) {
-    if (record && false) {
-    saveFrame("ok" + goCount + "/frame" + nf(n, 5) + ".tga");
+    if (record) {
+    saveFrame("greenLight" + goCount + "/frame" + nf(n, 5) + ".tga");
     n++;
   }
   //if (frameCount > 60*30*0.5) {
-    if (record && fTime == recordStart + loopEvery) { // hue == 0) {
-    record = false;
-    parameterDisplayOn = true;
-  }
+  //  if (record && fTime == recordStart + loopEvery) { // hue == 0) {
+  //  record = false;
+  //  parameterDisplayOn = true;
+  //}
   if (goTime || fTime == fr1 - 1) {// && hue == 0) {
-    parameterDisplayOn = false;
+    parameterDisplayOn = true;
     record = true;
     goTime = false;
     goCount++;
@@ -218,12 +226,74 @@ void fftLoop() {
 
 void loadParameters(int n) {
   //eep what a mess. These should all be saved in some file format...
-  if (mode == "record") {
-    restart = frameCount;
-  } else {
-    restart = millis();
-  }
-  if (n==0) {
+  //if (mode == "record") {
+  //  restart = 0;
+  //} else if (mode == "live") {
+  //  restart = millis();
+  //}
+  
+  if (n == 342) { //greenLightProject
+    revs = 22;//?
+    symmetry = 5;//0.74;
+    segments = 84;
+    fibPow = 3.287;
+    rep = 6;
+    scl = 1;
+    //loops every 300 frames
+    loopEvery = 60*30;
+    rainbowRate = 1.3;//0.0024?
+    tf = 5.333;
+    repShift = 0.00163;
+    scalingOn = false;
+    rotateZOn = false;
+    rotateXOn = false;
+    scaleInc = 0.001;
+    rfacDt = 1/pow(fib,7);
+    rfacInit = 300;
+    rfac = rfacInit;
+    rotRateZ = 0.12;
+    rotRateX = 0.318;
+    clockwiseOn = true;
+    counterClockwiseOn = true;
+    growthOn = false;
+    bgOn = true;
+    myBrush = 3;
+    strWeight = 1;
+
+    satf1 = 252;
+    sats1 = 252;
+    satf2 = 252;
+    sats2 = 252;
+    brif1 = 252;
+    bris1 = 252;
+    brif2 = 252;
+    bris2 = 252;
+    alphaf1 = 255;
+    alphas1 = 255;
+    alphaf2 = 255;
+    alphas2 = 255;
+    cShifts1 = 256/7;
+    cShifts2 = 256/8;
+    cShiftf2 = (256/7) - (256/8);
+
+    symRtn = new ParamRoutine(true, 342, 59*30);
+    segRtn = new ParamRoutine(true, 342, 97);
+    sizeRtn = new ParamRoutine(true, 342, 14.872);
+    repRtn = new ParamRoutine(true, 342, 156);
+    rainbowRtn = new ParamRoutine(true, 342, 1);
+    tfRtn = new ParamRoutine(true, 342, 150);
+    rShiftRtn = new ParamRoutine(true, 342, 11);
+    rrzRtn = new ParamRoutine(true, 342, 1);
+    rrxRtn = new ParamRoutine(true, 342, 20);
+    rfacRtn = new ParamRoutine(true, 342, 20);
+    
+    myPalette.setPalette(15);
+    
+    mode = "live";
+    goTime = false;
+    
+  
+  } else if (n==0) {
     revs = 10;
     symmetry = 10;//0.74;
     segments = 84;
@@ -992,6 +1062,7 @@ void loadParameters(int n) {
     bgOn = true;
     myBrush = 0;
     strWeight = 1;
+    growthOn = true;
 
     satf1 = 252;
     sats1 = 252;
@@ -1083,13 +1154,13 @@ void loadParameters(int n) {
     
   }  else if (n==981) { //why do you ask
     revs = 33;//?
-    symmetry = 0.913;//0.74;
+    symmetry = 5;//0.74;
     segments = 84;
     fibPow = 6.287;
     rep = 6;
     scl = 1;
     //loops every 300 frames
-    loopEvery = 200;
+    loopEvery = 60*30;
     rainbowRate = 12;//0.0024?
     tf = 5.333;
     repShift = 0.00163;
@@ -1097,8 +1168,8 @@ void loadParameters(int n) {
     rotateZOn = false;
     rotateXOn = false;
     scaleInc = 0.001;
-    rfacDt = 1/pow(fib,21);
-    rfacInit = 800;
+    rfacDt = 1/pow(fib,7);
+    rfacInit = 1;
     rotRateZ = 0.12;
     rotRateX = 0.318;
     clockwiseOn = true;
@@ -1123,7 +1194,7 @@ void loadParameters(int n) {
     cShifts2 = 256/12;
     cShiftf2 = 0;
 
-    symRtn = new ParamRoutine(false, 1, 32.775);
+    symRtn = new ParamRoutine(true, 5, 59*30);
     segRtn = new ParamRoutine(false, 2, 97);
     sizeRtn = new ParamRoutine(false, 1, 14.872);
     repRtn = new ParamRoutine(false, 1, 156);
@@ -1133,9 +1204,9 @@ void loadParameters(int n) {
     rrzRtn = new ParamRoutine(false, 0, 1);
     rrxRtn = new ParamRoutine(false, 1, 20);
     
-    myPalette.setPalette(0);
+    myPalette.setPalette(1);
     
-    mode = "live";
+    //mode = "live";
     goTime = false;
     
   }
@@ -1223,16 +1294,42 @@ void brush(float x, float y, float s) {
   } else if (myBrush == 1) {
     ellipse(x, y, s, s);
   } else if (myBrush == 2) {
-    rect(x, y, s, s);
+    //line(0, 0, 0, x, y, s);
     //        textSize(s);
     //textFont(mono);
     //text("@ starchildart", x, y);
-  } else if (myBrush == 3) {
-    //pushStyle();
-    //strokeWeight(2);
-    line(0, 0, 0, x, y, s);
-    //popStyle();
+    ellipse(x, y, s, s);
+  } else if (myBrush <= 10) {
+    texnGon(myBrush, x, y, s);
   }
+}
+
+void nGon(int n, float x, float y, float r) {
+  pushMatrix();
+    translate(x, y);
+    beginShape();
+    for (int i=0; i<n; i++) {
+      float theta = i * 2 * PI / float(n);
+      vertex(r*sin(theta), r*cos(theta));
+    }
+    endShape(CLOSE);
+  popMatrix();
+}
+
+
+void texnGon(int n, float x, float y, float r) {
+  pushMatrix();
+    translate(x, y);
+    textureMode(NORMAL);
+    //img.resize(int(r),int(r));
+    beginShape();
+    texture(img);
+    for (int i=0; i<n; i++) {
+      float theta = i * 2 * PI / float(n);
+      vertex(r*sin(theta), r*cos(theta), 0.5 + sin(theta), 0.5 + cos(theta));
+    }
+    endShape(CLOSE);
+  popMatrix();
 }
 
 public class ParamRoutine {
@@ -1240,12 +1337,18 @@ public class ParamRoutine {
   int mode;
   float speed, prevVal;
   int nModes;
+  Easer easer;
     ParamRoutine (boolean on, int m, float s) {
       this.enabled = on;
       this.mode = m;
       this.speed = s;
       this.nModes = 13;
       this.prevVal = -99;
+      this.easer = new Easer(1.1,  1);
+    }
+    
+    public void setEaserValue(float val) {
+      easer.setValue(val);
     }
 
     int getInt(int valIn) {
@@ -1282,10 +1385,10 @@ public class ParamRoutine {
       } else if (mode == 4) { //0 - 255/16 every [speed] seconds
         float t = fTime/(60*2*this.speed);
         valOut = map(sin(3*PI/2 + t*PI*2), -1, 1, 0, 12);
-      } else if (mode == 5) { //0 - 255/16 every [speed] seconds
+      } else if (mode == 55) { //0 - 255/16 every [speed] seconds
         float t = fTime/(60*2*this.speed);
         valOut = map(sin(3*PI/2 + t*PI*2), -1, 1, 0, 3);
-      } else if (mode == 5) {
+      } else if (mode == 56) {
         if (valOut > 100) {
           valOut *= 0.9996;
         } else if (valOut > 50) {
@@ -1303,6 +1406,9 @@ public class ParamRoutine {
         }  else if (valOut > 0.5) {
           valOut *= 0.999812;
         }
+      } else if (mode == 5) { //mousex
+        valOut = map((fTime), 0, this.speed, 9, 0.08);
+        valOut = pow(valOut, 1/3.0);
       } else if (mode == 6) { //mousex
         valOut = map(mouseX, 0, width, 0, 15);
       } else if (mode == 7) { //0 - 255 every [speed] seconds
@@ -1318,30 +1424,34 @@ public class ParamRoutine {
         float t = (fTime)/(this.speed);
         valOut = pow(7, 1-t);
       } else if (mode == 10) {
-        float th = (fTime/(30 * this.speed)) * 2 * PI ;
-        float r = 20;
+        float th = (fTime/(30.0 * this.speed)) * 2 * PI ;
+        float r = 0.2;
         float x = r * cos(th);
         float y = r * sin(th);
-        valOut = map(noise(x, y), 0, 1, (0), (256*2));
+        //println(x);
+        valOut = map((float)osNoise.eval(x, y), -1, 1, (256/2), (256*1.5));
+        //println(valOut);
       } else if (mode == 11) {
         float th = (fTime/(30 * this.speed)) * 2 * PI ;
         float r = 3;
         float x = r * cos(th);
         float y = r * sin(th);
-        valOut = map(noise(x, y), 0, 1, -4, 8);
+        valOut = map((float)osNoise.eval(x, y), -1, 1, -4, 8);
       } else if (mode == 12) {
         float th = (fTime/(30 * this.speed)) * 2 * PI ;
         float r = 2;
         float x = 4 + r * cos(th);
         float y = 4 + r * sin(th);
-        valOut = map(noise(x, y), 0, 1, 0, 4);
+        valOut = map((float)osNoise.eval(x, y), -1, 1, 0, 4);
+      } else if (mode == 342) { //Green Light Project
+        valOut = easer.getValue(fTime);
       }
-      if (prevVal == -99) {
-        prevVal = valOut;
-      }
-      float v = lerp(prevVal, valOut, 0.001);
-      prevVal = v;
-      return v;
+      //if (prevVal == -99) {
+      //  prevVal = valOut;
+      //}
+      //float v = lerp(prevVal, valOut, 0.001);
+      //prevVal = v;
+      return valOut;
     }
 
     void toggle() {
@@ -1376,6 +1486,8 @@ public class ParamRoutine {
 void runParamRoutines() {
   //symRtn, segRtn, sizeRtn, repRtn, rainbowRtn, tfRtn, rShiftRtn, rrzRtn, rrxRtn
   
+  //loadEvents();
+  
   if (symRtn.enabled) {
     symmetry = symRtn.getFloat(symmetry);
   }
@@ -1398,11 +1510,153 @@ void runParamRoutines() {
     repShift = rShiftRtn.getFloat(repShift);
   }
   if (rrzRtn.enabled) {
-    rotRateZ = rrzRtn.getFloat(rotRateZ);
+    xmag = rrzRtn.getFloat(xmag);
   }
   if (rrxRtn.enabled) {
-    rotRateX = rrxRtn.getFloat(rotRateX);
+    ymag = rrxRtn.getFloat(ymag);
   }
+  //if (rfacRtn.enabled) {
+  //  rfac = rfacRtn.getFloat(rfac);
+  //}
+}
+
+
+float tEnd = 2*60*60;
+float t0 = 0.25*tEnd;
+float t1 = t0 + 2*60;
+float t2 = t1 + 10*60;
+float t3 = 0.5 * tEnd;
+float t4 = 0.7 * tEnd;
+float t5 = 0.77 * tEnd;
+float t6 = 0.8 * tEnd;
+float t7 = 0.83 * tEnd;
+float t8 =  0.87 * tEnd;
+float t9 =  0.9 * tEnd;
+float t10 =  0.95 * tEnd;
+boolean t1Hit = false;
+boolean t2Hit = false;
+boolean t3Hit = false;
+boolean t4Hit = false;
+boolean t5Hit = false;
+boolean t6Hit = false;
+boolean t7Hit = false;
+boolean t8Hit = false;
+boolean t9Hit = false;
+boolean t10Hit = false;
+
+void loadEvents() {
+  if (starting) {
+    starting = false;
+    println(millis()/1000.);
+    println(restart);
+    println(mode);
+    symRtn.easer.setValue(symmetry);
+    segRtn.easer.setValue(segments);
+    sizeRtn.easer.setValue(fibPow);
+    repRtn.easer.setValue(rep);
+    rainbowRtn.easer.setValue(rainbowRate);
+    tfRtn.easer.setValue(3);
+    rShiftRtn.easer.setValue(repShift);
+    rrzRtn.easer.setValue(-xmag);
+    rrxRtn.easer.setValue(-ymag);
+    rfacRtn.easer.setValue(1);
+    
+    
+    symRtn.easer.setValue(900);
+    symRtn.easer.setEaseMode(2);
+    symRtn.easer.setEaseByTarget(0, fTime, t0 - 1);    
+    rfacRtn.easer.setValue(1);
+    rfacRtn.easer.setEaseMode(0);
+    rfacRtn.easer.setEaseByTarget(1200, fTime, t0 - 1);    
+    rrzRtn.easer.setEaseMode(0);
+    rrzRtn.easer.setEaseByTarget(6*PI, fTime, tEnd);
+  }
+  
+  if (fTime >= t1 && !t1Hit) {
+    t1Hit = true;
+    println("t1");
+    symRtn.easer.setEaseMode(8);
+    symRtn.easer.setEaseByTarget(5, fTime, t2 - t1);  
+    rfacRtn.easer.setEaseByTarget(3000*6, fTime, tEnd);    
+  }
+  
+  if (fTime >= t2 && !t2Hit) {
+    t2Hit = true;
+    println("t2");
+    symRtn.easer.setEaseMode(3);
+    symRtn.easer.setEaseByTarget(1, fTime, t3 - t2);  
+    
+    tfRtn.easer.setEaseMode(3);
+    tfRtn.easer.setEaseByTarget(17, fTime, t3 - t2);
+  }
+  
+  if (fTime >= t3 && !t3Hit) {
+    t3Hit = true;
+    println("t3");
+    rShiftRtn.easer.setEaseMode(2);
+    rShiftRtn.easer.setEaseByTarget(255, fTime, tEnd - t3);
+  }
+  
+  if (fTime >= t4 && !t4Hit) {
+    t4Hit = true;
+    println("t4");
+    symRtn.easer.setEaseMode(10);
+    symRtn.easer.setEaseByTarget(20, fTime, 0.07*tEnd);
+  }
+  
+  if (fTime >= t5 && !t5Hit) {
+    t5Hit = true;
+    println("t5");
+    rfacRtn.easer.setEaseMode(3);
+    rfacRtn.easer.setEaseByTarget(100, fTime, t6 - t5);
+    symRtn.easer.setEaseMode(3);
+    symRtn.easer.setEaseByTarget(1, fTime, t6 - t5);
+  }
+  
+  if (fTime >= t6 && !t6Hit) {
+    t6Hit = true;
+    println("t6");
+    rfacRtn.easer.setEaseMode(0);
+    rfacRtn.easer.setEaseByTarget(1000, fTime, t7 - t6);
+    symRtn.easer.setEaseMode(0);
+    symRtn.easer.setEaseByTarget(10, fTime, t7 - t6);
+  }
+  
+  if (fTime >= t7 && !t7Hit) {
+    t7Hit = true;
+    println("t7");
+    rfacRtn.easer.setEaseMode(0);
+    rfacRtn.easer.setEaseByTarget(100, fTime, t8 - t7);
+    symRtn.easer.setEaseMode(0);
+    symRtn.easer.setEaseByTarget(40, fTime, t8 - t7);
+  }
+  
+  if (fTime >= t8 && !t8Hit) {
+    t8Hit = true;
+    println("t8");
+    rrzRtn.easer.setEaseMode(1);
+    rrzRtn.easer.setEaseByTarget(12*PI, fTime, tEnd - t8);
+    tfRtn.easer.setEaseMode(0);
+    tfRtn.easer.setEaseByTarget(255, fTime, tEnd-t8);
+    rShiftRtn.easer.setEaseMode(3);
+    rShiftRtn.easer.setEaseByTarget(0.001, fTime, tEnd-t8);
+  }
+  
+  if (fTime >= t9 && !t9Hit) {
+    t9Hit = true;
+    println("t9");
+    rfacRtn.easer.setEaseMode(1);
+    rfacRtn.easer.setEaseByTarget(2200, fTime, tEnd - t9);
+    symRtn.easer.setEaseMode(3);
+    symRtn.easer.setEaseByTarget(0, fTime, tEnd - t9);
+  }
+  
+    
+  
+  if (fTime >= tEnd){
+    //exit();
+  }
+  
 }
 
 public void keyReleased() {
@@ -1457,6 +1711,7 @@ void keyPressed() {
         break;
       case('!'):
         goTime = true;
+        restart = frameCount;
         //goCount++;
       break;
       case('@'):
@@ -1624,7 +1879,7 @@ void keyPressed() {
         symRtn.setMode(6);
       break;    
       case('B'):
-      myBrush = (myBrush + 1) % 4;
+      myBrush = (myBrush + 1) % 11;
       break;
       case('+'):
         saveParams();
@@ -2071,10 +2326,10 @@ String paramRtnStr(ParamRoutine p) {
 }
 
 void displayParameters() {
-  int tab = 30;
+  int tab = (width-715)/2;
   int x = tab;
   //int y = height - 150;
-  int y = 60;
+  int y = height - 30;
   int count = 0;
   pushStyle();  
   camera();
@@ -2082,10 +2337,10 @@ void displayParameters() {
   noLights();
   textMode(MODEL);
   rectMode(CORNER);
-  fill(170, 20, 255);
+  fill(170, 0, 0);
   noStroke();
-  rect(0, y-35, width, 50);
-  fill(170, 255, 0);
+  rect(x-15, y-15, 715, 20);
+  fill(170, 0, 255);
   textFont(mono);
   String params = "";
   params += " " + int(frameRate) + " ";
