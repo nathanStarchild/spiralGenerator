@@ -4,6 +4,7 @@ float symmetry, tf, scl, scaleInc, rfacDt, rainbowRate, rotRateZ, rotRateX, repS
 float rfac, fullTime, fibPow, fRate, fHue;
 float rf1, rf2;
 int loopGrowths;
+int nVids;
 color c1, c2;
 boolean scalingOn, rotateZOn, clockwiseOn, counterClockwiseOn, bgOn; 
 boolean parameterDisplayOn, rotateXOn, mouseCameraOn, ctl, alt;
@@ -36,7 +37,7 @@ boolean starting = true;
 PImage img;
 ArrayList<PImage> images = new ArrayList<PImage>();
 int im = 0;
-boolean frameOn = true;
+boolean frameOn = false;
 boolean playVideo1 = false;
 boolean playVideo2 = false;
 PImage vid1;
@@ -47,7 +48,7 @@ int tFrame = 1;
 int oFrame = 0;
 Easer tFrameEaser = new Easer(1, 1222);
 boolean frameIncrement = false;
-boolean withAlpha = true;
+boolean withAlpha = false;
 int magicNumber = 3760;
 Easer tScaleEaser = new Easer(1, 1222);
 Recorder myRecorder;
@@ -58,9 +59,10 @@ Recorder myRecorder;
 void setup() {
   //fullScreen(P3D, SPAN);
   // fullScreen(P3D, 2);
-  // size(800, 800, P3D);
-  size(864, 1080, P3D);
-  smooth(3);
+  size(1920, 1080, P3D);
+  // size(1920, 1080, P3D);
+  // size(864, 864, P3D);
+  // smooth(3);
   background(0, 0, 0);
   noCursor();
   float fov = PI/3.0;
@@ -88,10 +90,11 @@ void setup() {
   
 
   myPalette = new Palette();
-  loadParameters(1349);
+  loadParameters(2000);
   myRecorder = new Recorder(this, g, loopEvery);
-  myRecorder.startRecording();
-  mode = "record";
+  // myRecorder.startRecording();
+  // mode = "record";
+  mode = "live";
   fftOn = false;
   loadImages2();
   
@@ -225,7 +228,7 @@ void draw() {
   if (showSpiral){
     for (int t=segments*revs; t>=0; t--) {
       float r =  rfac * pow(fib, (-1 * symmetry * t/float(segments)));
-      float s = (r)/pow((0.8*fib), fibPow);
+      float s = (r)/pow((1.0*fib), fibPow);
       if ((r-s)/30>sqrt(pow(width/2, 2) + pow(height/2, 2))) {
         break;
       }
@@ -262,10 +265,11 @@ void draw() {
             // texnGon(myBrush, r*sin(theta), r*cos(theta), s, im, f1);
             // newTexnGon(myBrush, r*sin(theta), r*cos(theta), s, imggg, f1);
             // if (true){
-            if (s<1){
+            if (s<0.1){
               brush(r*sin(theta), r*cos(theta), s);
             } else {
-              new2TexnGon(myBrush, r*sin(theta), r*cos(theta), s, int((fHue+(t*tf))%256), f1);
+              // new2TexnGon(myBrush, r*sin(theta), r*cos(theta), 2*s, int((n%nVids)*256 + (fHue+(t*tf))%256), f1);
+              texPhone(r*sin(theta), r*cos(theta), 2*s, int((n%nVids)*256 + (fHue+(t*tf))%256), f1);
             }
           }
           if (counterClockwiseOn) {
@@ -282,10 +286,11 @@ void draw() {
             // im = getImgNum(2, n);
             // texnGon(myBrush, r*sin(theta2), r*cos(theta2), s, im, f2);
             // if (true){
-            if (s<0.31){
+            if (s<0.1){
               brush(r*sin(theta2), r*cos(theta2), s);
             } else {
-              new2TexnGon(myBrush, r*sin(theta2), r*cos(theta2), s, int((fHue+(t*tf)+cShiftf2)%256), f2);
+              // new2TexnGon(myBrush, r*sin(theta2), r*cos(theta2), 2*s, int((n%nVids)*256 + (fHue+(t*tf)+cShiftf2)%256), f2);
+              texPhone(r*sin(theta2), r*cos(theta2), 2*s, int((n%nVids)*256 + (fHue+(t*tf)+cShiftf2)%256), f2);
             }
             popMatrix();
           }
@@ -375,9 +380,11 @@ void loadImages() {
 }
 
 void loadImages2(){
-  for (int i=0; i<256; i++){
-    images.add(loadImage("recorded1/frame" + nf(i, 5) + ".jpg"));
-    println("loading recorded1/frame" + nf(i, 5) + ".jpg");
+  for (int n=3; n<=2+nVids; n++){
+    for (int i=0; i<256; i++){
+      images.add(loadImage("heartless" + n + "/frame" + nf(i, 5) + ".jpg"));
+      println("loading heartless" + n + "/frame" + nf(i, 5) + ".jpg");
+    }
   }
 }
 
@@ -490,11 +497,11 @@ void texnGon(int n, float x, float y, float r, int im, color f) {
     textureMode(NORMAL);
     //img.resize(int(r),int(r));
     beginShape();
-    if (withAlpha){
-      tint(f, (f >> 16) & 0xFF);
-    } else {
-      tint(f);
-    }
+    // if (withAlpha){
+    //   tint(f, (f >> 16) & 0xFF);
+    // } else {
+    //   tint(f);
+    // }
     texture(images.get(im));
     for (int i=0; i<n; i++) {
       float theta = i * 2 * PI / float(n);
@@ -533,9 +540,9 @@ void new2TexnGon(int n, float x, float y, float r, int im, color f) {
     textureMode(NORMAL);
     //img.resize(int(r),int(r));
     beginShape();
-    // if (withAlpha){
-    //   tint(f, (f >> 16) & 0xFF);
-    // } else {
+    if (withAlpha){
+      tint(f, (f >> 16) & 0xFF);
+    } //else {
     //   tint(f);
     // }
     
@@ -550,6 +557,29 @@ void new2TexnGon(int n, float x, float y, float r, int im, color f) {
   //popMatrix();
 }
 
+void texPhone(float x, float y, float r, int im, color f) {
+  float a = 45;
+  float b = 80;
+  float gamma = asin(a/sqrt(a*a + b*b));
+  float alpha = PI - 2*(gamma);
+  //float beta = asin(b/sqrt(a*a + b*b));
+  float beta = PI - alpha;
+  float theta = alpha/2.0;
+  //float theta = -alpha + (alpha + beta)/2.0;
+
+  textureMode(NORMAL);  
+  beginShape();
+  texture(images.get(im));
+  //theta += alpha;
+  vertex(x + r*cos(theta), y + r*sin(theta), 0.5+cos(theta), 0.5+sin(theta));
+  theta += beta;
+  vertex(x + r*cos(theta), y + r*sin(theta), 0.5+cos(theta), 0.5+sin(theta));
+  theta += alpha;
+  vertex(x + r*cos(theta), y + r*sin(theta), 0.5+cos(theta), 0.5+sin(theta));
+  theta += beta;
+  vertex(x + r*cos(theta), y + r*sin(theta), 0.5+cos(theta), 0.5+sin(theta));
+  endShape(CLOSE);  
+}
 
 public void keyReleased() {
   if (key == CODED) {

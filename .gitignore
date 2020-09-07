@@ -3,3 +3,6 @@ data/*
 ok1/*
 saves/*
 *.mp4
+*.jpg
+out/
+audio/

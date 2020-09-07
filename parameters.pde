@@ -103,6 +103,74 @@ void loadParameters(int n) {
     frameIncrement = false;
     
   
+  } else if (n==2000) { //heartless machine Clip
+    revs = 3;
+    symmetry = 4;//0.74;
+    segments = 10;
+    fibPow = 6.287;
+    rep = 6;
+    scl = 1;
+    //loops every 300 frames
+    loopEvery = 2100;
+    rainbowRate = 1;//0.0024?
+    fRate = 1;
+    tf = 11.333;
+    repShift = 9.740001;
+    scalingOn = false;
+    rotateZOn = true;
+    rotateXOn = false;
+    scaleInc = 0.001;
+    rfacDt = 1/pow(fib,12);
+    rfacInit = 800;
+    rotRateZ = 0.12;
+    rotRateX = 0.318;
+    clockwiseOn = true;
+    counterClockwiseOn = true;
+    bgOn = true;
+    myBrush = 6;
+    strWeight = 1;
+    growthOn = true;
+    nVids = 2;
+
+    satf1 = 252;
+    sats1 = 252;
+    satf2 = 252;
+    sats2 = 252;
+    brif1 = 252;
+    bris1 = 252;
+    brif2 = 252;
+    bris2 = 252;
+    alphaf1 = 255;
+    alphas1 = 0;
+    alphaf2 = 255;
+    alphas2 = 0;
+    cShifts1 = 256/12;
+    cShifts2 = 3*256/12;
+    cShiftf2 = 256/6;
+
+    symRtn = new ParamRoutine(false, 1, 32.775);
+    segRtn = new ParamRoutine(false, 0, 1);
+    sizeRtn = new ParamRoutine(true, 1, 11.872);
+    repRtn = new ParamRoutine(false, 0, 1);
+    rainbowRtn = new ParamRoutine(false, 0, 1);
+    tfRtn = new ParamRoutine(false, 3, 85);
+    rShiftRtn = new ParamRoutine(false, 2, 31);
+    rrzRtn = new ParamRoutine(true, 342, 1);
+    rrxRtn = new ParamRoutine(true, 342, 20);
+    rfacRtn = new ParamRoutine(true, 342, 20);
+
+    rfacRtn.easer.setValue(rfacInit);
+    rrxRtn.easer.setValue(0);
+    
+    myPalette.setPalette(1);
+    
+    mode = "live";
+    goTime = false;
+    frameOn = false;
+    withAlpha = true;
+    parameterDisplayOn = true;
+
+    // blendMode(SCREEN);
   } else if (n == 1349) { //...
     revs = 7;//?
     symmetry = 4;//0.74;
@@ -2131,6 +2199,7 @@ void runParamRoutines() {
   if (rainbowRtn.enabled) {
     rainbowRate = rainbowRtn.getFloat(rainbowRate);
   }
+  fRate = rainbowRate;
   if (tfRtn.enabled) {
     tf = tfRtn.getFloat(tf);
   }
