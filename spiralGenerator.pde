@@ -90,13 +90,13 @@ void setup() {
   
 
   myPalette = new Palette();
-  loadParameters(2000);
+  loadParameters(345);
   myRecorder = new Recorder(this, g, loopEvery);
-  myRecorder.startRecording();
+  // myRecorder.startRecording();
   // mode = "record";
   // mode = "live";
   fftOn = false;
-  loadImages2();
+  // loadImages2();
   
   if (fftOn) {
     fftSetup();
@@ -268,12 +268,13 @@ void draw() {
             // texnGon(myBrush, r*sin(theta), r*cos(theta), s, im, f1);
             // newTexnGon(myBrush, r*sin(theta), r*cos(theta), s, imggg, f1);
             // if (true){
-            if (s<0.1){
               brush(r*sin(theta), r*cos(theta), s);
-            } else {
-              // new2TexnGon(myBrush, r*sin(theta), r*cos(theta), 2*s, int((n%nVids)*256 + (fHue+(t*tf))%256), f1);
-              texPhone(r*sin(theta), r*cos(theta), 2*s, int((n%nVids)*256 + (fHue+(t*tf))%256), f1);
-            }
+            // if (s<0.1){
+            //   brush(r*sin(theta), r*cos(theta), s);
+            // } else {
+            //   // new2TexnGon(myBrush, r*sin(theta), r*cos(theta), 2*s, int((n%nVids)*256 + (fHue+(t*tf))%256), f1);
+            //   texPhone(r*sin(theta), r*cos(theta), 2*s, int((n%nVids)*256 + (fHue+(t*tf))%256), f1);
+            // }
           }
           if (counterClockwiseOn) {
             fill(f2);
@@ -289,12 +290,13 @@ void draw() {
             // im = getImgNum(2, n);
             // texnGon(myBrush, r*sin(theta2), r*cos(theta2), s, im, f2);
             // if (true){
-            if (s<0.1){
               brush(r*sin(theta2), r*cos(theta2), s);
-            } else {
-              // new2TexnGon(myBrush, r*sin(theta2), r*cos(theta2), 2*s, int((n%nVids)*256 + (fHue+(t*tf)+cShiftf2)%256), f2);
-              texPhone(r*sin(theta2), r*cos(theta2), 2*s, int((n%nVids)*256 + (fHue+(t*tf)+cShiftf2)%256), f2);
-            }
+            // if (s<0.1){
+            //   brush(r*sin(theta2), r*cos(theta2), s);
+            // } else {
+            //   // new2TexnGon(myBrush, r*sin(theta2), r*cos(theta2), 2*s, int((n%nVids)*256 + (fHue+(t*tf)+cShiftf2)%256), f2);
+            //   texPhone(r*sin(theta2), r*cos(theta2), 2*s, int((n%nVids)*256 + (fHue+(t*tf)+cShiftf2)%256), f2);
+            // }
             popMatrix();
           }
         }
