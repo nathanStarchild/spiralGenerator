@@ -92,9 +92,9 @@ void setup() {
   myPalette = new Palette();
   loadParameters(2000);
   myRecorder = new Recorder(this, g, loopEvery);
-  // myRecorder.startRecording();
+  myRecorder.startRecording();
   // mode = "record";
-  mode = "live";
+  // mode = "live";
   fftOn = false;
   loadImages2();
   
@@ -117,6 +117,9 @@ void setup() {
 }  
 
 void draw() {
+  
+  println(Runtime.getRuntime().totalMemory()/1024);
+  println("frame " + frameCount);
 
   // println("frame " + frameCount);
   // PImage imggg = loadImage("recorded1/frame" + nf(myRecorder.n, 5) + ".jpg");
@@ -380,10 +383,10 @@ void loadImages() {
 }
 
 void loadImages2(){
-  for (int n=3; n<=2+nVids; n++){
+  for (int n=0; n<nVids; n++){
     for (int i=0; i<256; i++){
-      images.add(loadImage("heartless" + n + "/frame" + nf(i, 5) + ".jpg"));
-      println("loading heartless" + n + "/frame" + nf(i, 5) + ".jpg");
+      images.add(loadImage("" + n + "/frame" + nf(i, 5) + ".jpg"));
+      println("loading " + n + "/frame" + nf(i, 5) + ".jpg");
     }
   }
 }
@@ -557,28 +560,36 @@ void new2TexnGon(int n, float x, float y, float r, int im, color f) {
   //popMatrix();
 }
 
-void texPhone(float x, float y, float r, int im, color f) {
-  float a = 45;
-  float b = 80;
-  float gamma = asin(a/sqrt(a*a + b*b));
-  float alpha = PI - 2*(gamma);
-  //float beta = asin(b/sqrt(a*a + b*b));
-  float beta = PI - alpha;
-  float theta = alpha/2.0;
-  //float theta = -alpha + (alpha + beta)/2.0;
+void texPhone(float x, float y, float a, int im, color f) {
+    float ratio = 3.0/5.0;
+    float b = a / ratio;
+    float gamma = asin(a/sqrt(a*a + b*b));
+    float alpha = PI - 2*gamma;
+    float beta = PI - alpha;
+    float r = sqrt(a*a + b*b)/2.0;
+    // pg.noStroke();
+    if (withAlpha){
+      tint(f, (f >> 16) & 0xFF);
+    }
 
-  textureMode(NORMAL);  
-  beginShape();
-  texture(images.get(im));
-  //theta += alpha;
-  vertex(x + r*cos(theta), y + r*sin(theta), 0.5+cos(theta), 0.5+sin(theta));
-  theta += beta;
-  vertex(x + r*cos(theta), y + r*sin(theta), 0.5+cos(theta), 0.5+sin(theta));
-  theta += alpha;
-  vertex(x + r*cos(theta), y + r*sin(theta), 0.5+cos(theta), 0.5+sin(theta));
-  theta += beta;
-  vertex(x + r*cos(theta), y + r*sin(theta), 0.5+cos(theta), 0.5+sin(theta));
-  endShape(CLOSE);  
+    float theta = alpha/2.0;
+
+    // int n = (im / 256)%nVids + 2;
+    // int m = im % 256;
+    // PImage img = loadImage("heartless" + n + "/frame" + nf(m, 5) + ".jpg");
+    // println("loading heartless" + n + "/frame" + nf(m, 5) + ".jpg");
+    textureMode(NORMAL);
+    beginShape();
+    texture(images.get(im));
+    // texture(img);
+    vertex(x + r*cos(theta), y + r*sin(theta), 1-0.5*(1-ratio), 1);
+    theta += beta;
+    vertex(x + r*cos(theta), y + r*sin(theta), 0.5*(1-ratio), 1);
+    theta += alpha;
+    vertex(x + r*cos(theta), y + r*sin(theta), 0.5*(1-ratio), 0);
+    theta += beta;
+    vertex(x + r*cos(theta), y + r*sin(theta), 1-0.5*(1-ratio), 0);
+    endShape(CLOSE); 
 }
 
 public void keyReleased() {

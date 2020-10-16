@@ -111,7 +111,7 @@ void loadParameters(int n) {
     rep = 6;
     scl = 1;
     //loops every 300 frames
-    loopEvery = 2100;
+    loopEvery = 34*30;
     rainbowRate = 1;//0.0024?
     fRate = 1;
     tf = 11.333;
@@ -130,7 +130,7 @@ void loadParameters(int n) {
     myBrush = 6;
     strWeight = 1;
     growthOn = true;
-    nVids = 2;
+    nVids = 6;
 
     satf1 = 252;
     sats1 = 252;
@@ -164,11 +164,11 @@ void loadParameters(int n) {
     
     myPalette.setPalette(1);
     
-    mode = "live";
+    mode = "record";
     goTime = false;
     frameOn = false;
     withAlpha = true;
-    parameterDisplayOn = true;
+    parameterDisplayOn = false;
 
     // blendMode(SCREEN);
   } else if (n == 1349) { //...
