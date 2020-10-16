@@ -6,3 +6,4 @@ saves/*
 *.jpg
 out/
 audio/
+recorded*
