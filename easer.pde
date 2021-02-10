@@ -1,6 +1,6 @@
 
 
-static public class Easer {
+public class Easer {
   
   float tStart, tEnd, duration;
   float val, sVal, eVal;
@@ -35,7 +35,12 @@ static public class Easer {
   
   public float getValue(float x) {
     float t = norm(x, tStart, tEnd);
-    float d = AULib.ease(easeMode, t);
+    float d;
+    if (easeMode == 99) {
+      d = rfacEaser(t);
+    } else {
+      d = AULib.ease(easeMode, t);
+    }
     val = lerp(sVal, eVal, d);
     return val;
   }
@@ -74,6 +79,15 @@ static public class Easer {
   
   public void unPause() {
     paused = false;
+  }
+
+  public float rfacEaser(float t){
+    // println("rfacInit: " + rfacInit);
+    // return rfacInit * pow(fib, (t*loopGrowths) * symmetry);
+    // println("t: " + t);
+    // println("fib^t: " + pow(fib, t));
+    // println("full thing: " + pow(fib, (t*loopGrowths) * symmetry));
+    return rfacInit * pow(fib, (t*loopGrowths) * symmetry);
   }
   
 }

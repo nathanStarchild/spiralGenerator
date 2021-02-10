@@ -2,7 +2,7 @@ int rep, segments, fTime, revs, rfacInit, restart, myBrush, goCount, loopEvery;
 float fib = 1.61803398875;
 float symmetry, tf, scl, scaleInc, rfacDt, rainbowRate, rotRateZ, rotRateX, repShift;
 float rfac, fullTime, fibPow, fRate, fHue;
-float rf1, rf2;
+float rf1, rf2, rf3;
 int loopGrowths;
 int nVids;
 color c1, c2;
@@ -40,12 +40,13 @@ int im = 0;
 boolean frameOn = false;
 boolean playVideo1 = false;
 boolean playVideo2 = false;
+boolean first = true;
 PImage vid1;
 PImage vid2;
 boolean showSpiral = true;
 int tn = 0;
 int tFrame = 1;
-int oFrame = 0;
+int oFrame = 255;
 Easer tFrameEaser = new Easer(1, 1222);
 boolean frameIncrement = false;
 boolean withAlpha = false;
@@ -59,9 +60,11 @@ Recorder myRecorder;
 void setup() {
   //fullScreen(P3D, SPAN);
   // fullScreen(P3D, 2);
-  size(1920, 1080, P3D);
+  // size(1080, 1350, P3D);
+  size(864, 1080, P3D);
   // size(1920, 1080, P3D);
   // size(864, 864, P3D);
+  noLoop();
   // smooth(3);
   background(0, 0, 0);
   noCursor();
@@ -90,9 +93,11 @@ void setup() {
   
 
   myPalette = new Palette();
-  loadParameters(345);
+  // delay(1000);
+  loadParameters(3000);
   myRecorder = new Recorder(this, g, loopEvery);
-  // myRecorder.startRecording();
+  // myRecorder = new Recorder(this, g, 2*30*60);
+  myRecorder.startRecording();
   // mode = "record";
   // mode = "live";
   fftOn = false;
@@ -111,6 +116,8 @@ void setup() {
   
   
   tScaleEaser.setValue(1);  // 
+
+  loop();
   
 
 
@@ -118,8 +125,12 @@ void setup() {
 
 void draw() {
   
-  println(Runtime.getRuntime().totalMemory()/1024);
   println("frame " + frameCount);
+  if (first){
+    first = false;
+
+    loadImagesHal();
+  }
 
   // println("frame " + frameCount);
   // PImage imggg = loadImage("recorded1/frame" + nf(myRecorder.n, 5) + ".jpg");
@@ -147,6 +158,7 @@ void draw() {
   }
   // rotRateZ = 720 / float(loopEvery*rep);
   runParamRoutines();
+  // println("rfac: " + rfac);
 
   if (bgOn) {
     background(170, 0, 0);
@@ -185,12 +197,15 @@ void draw() {
   
   if (playVideo2) {
       //println(tFrame);
-      oFrame++;
-      oFrame = min(oFrame, 7499);
-      vid2 = loadImage("orb/orb" + nf(oFrame, 4) + ".png");
+      // oFrame++;
+
+      // oFrame = min(oFrame, 7499);
+      oFrame = (oFrame % 1741) + 1;
+      // vid2 = loadImage("orb/orb" + nf(oFrame, 4) + ".png");
+      vid2 = loadImage("mistyForest/frameN" + nf(oFrame,4) + ".jpg");
       //println("w: " + vid2.width + ", h: " + vid2.height);
       tint(255);
-      //vid2.resize(height * vid2.width/vid2.height, height);
+      // vid2.resize(height * vid2.width/vid2.height, height);
       //image(vid2, -640, -360);
       image(vid2, -vid2.width/2.0, -vid2.height/2.0);
   }
@@ -268,13 +283,13 @@ void draw() {
             // texnGon(myBrush, r*sin(theta), r*cos(theta), s, im, f1);
             // newTexnGon(myBrush, r*sin(theta), r*cos(theta), s, imggg, f1);
             // if (true){
+              // brush(r*sin(theta), r*cos(theta), s);
+            if (s<2){
               brush(r*sin(theta), r*cos(theta), s);
-            // if (s<0.1){
-            //   brush(r*sin(theta), r*cos(theta), s);
-            // } else {
-            //   // new2TexnGon(myBrush, r*sin(theta), r*cos(theta), 2*s, int((n%nVids)*256 + (fHue+(t*tf))%256), f1);
-            //   texPhone(r*sin(theta), r*cos(theta), 2*s, int((n%nVids)*256 + (fHue+(t*tf))%256), f1);
-            // }
+            } else {
+              new2TexnGon(myBrush, r*sin(theta), r*cos(theta), 2*s, (t*n*11 + fTime)%325, f1);
+              // texPhone(r*sin(theta), r*cos(theta), 2*s, int((n%nVids)*256 + (fHue+(t*tf))%256), f1);
+            }
           }
           if (counterClockwiseOn) {
             fill(f2);
@@ -290,13 +305,14 @@ void draw() {
             // im = getImgNum(2, n);
             // texnGon(myBrush, r*sin(theta2), r*cos(theta2), s, im, f2);
             // if (true){
+              // brush(r*sin(theta2), r*cos(theta2), s);
+            if (s<2){
               brush(r*sin(theta2), r*cos(theta2), s);
-            // if (s<0.1){
-            //   brush(r*sin(theta2), r*cos(theta2), s);
-            // } else {
-            //   // new2TexnGon(myBrush, r*sin(theta2), r*cos(theta2), 2*s, int((n%nVids)*256 + (fHue+(t*tf)+cShiftf2)%256), f2);
-            //   texPhone(r*sin(theta2), r*cos(theta2), 2*s, int((n%nVids)*256 + (fHue+(t*tf)+cShiftf2)%256), f2);
-            // }
+            } else {
+              // new2TexnGon(myBrush, r*sin(theta2), r*cos(theta2), 2*s, n*325 + (t*11 + (fTime))%325, f2);
+              new2TexnGon(myBrush, r*sin(theta2), r*cos(theta2), 2*s, (t*11 + (fTime))%325, f2);
+              // texPhone(r*sin(theta2), r*cos(theta2), 2*s, int((n%nVids)*256 + (fHue+(t*tf)+cShiftf2)%256), f2);
+            }
             popMatrix();
           }
         }
@@ -382,6 +398,25 @@ void loadImages() {
   images.add(loadImage("flower1bw.png"));//32
   images.add(loadImage("flower3bw.png"));//33
   images.add(loadImage("flower1bw.png"));//34
+}
+
+void loadImagesHal() {
+  // for (int i=0; i<325; i++){
+  //   println(i);
+  //   images.add(loadImage("death/frame" + nf(i, 5) + ".jpg"));
+  // }
+  // for (int i=0; i<325; i++){
+  //   println(i);
+  //   images.add(loadImage("xylo/frame" + nf(i, 5) + ".jpg"));
+  // }
+  for (int i=0; i<325; i++){
+    println(i);
+    images.add(loadImage("house/frame" + nf(i, 5) + ".jpg"));
+  }
+  // for (int i=0; i<325; i++){
+  //   println(i);
+  //   images.add(loadImage("bats/frame" + nf(i, 5) + ".jpg"));
+  // }
 }
 
 void loadImages2(){
@@ -540,6 +575,7 @@ void newTexnGon(int n, float x, float y, float r, PImage imggg, color f) {
 }
 
 void new2TexnGon(int n, float x, float y, float r, int im, color f) {
+  // println(im);
   //pushMatrix();
     //translate(x, y);
     textureMode(NORMAL);
@@ -865,12 +901,13 @@ void keyPressed() {
         //}
         //break;
         //tStart3Hit = false;
-        if (mode == "live"){
-            restart = millis() - int(t29 * 1000/60.0);
-        } else {
-          restart = frameCount - int(t29);
-        }
-        doT29();
+        // if (mode == "live"){
+        //     restart = millis() - int(t29 * 1000/60.0);
+        // } else {
+        //   restart = frameCount - int(t29);
+        // }
+        // doT29();
+        blerp();
         break;
       case('|'):
         if (mode == "live"){

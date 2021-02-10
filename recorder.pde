@@ -40,18 +40,22 @@ public class Recorder {
       theG.save("" + title + "" + count + "/frame" + nf(n, 5) + ".jpg");
       n++;
     }
-    if ( recording && app.frameCount >= startFrame + loopFrames) {
+    if ( recording && app.frameCount >= startFrame + loopFrames + 1) {
       recording = false;
       println("done recording");
       exit();
     }
+    // if ( recording && app.frameCount == startFrame + loopFrames - 15*30) {
+    //   flipIt(1);
+    //   println("bringitback");
+    // }
     // if ( true && (app.frameCount - startFrame) % (loopFrames/4.0) == 0) {
-    if ( recording && (app.frameCount - startFrame) % (loopFrames/6.) == 0) {
+    // if ( recording && (app.frameCount - startFrame) % (loopFrames/6.) == 0) {
       
-      flipIt(df);
-      df++;
-      println("flipIt");
-    }
+    //   flipIt(df);
+    //   df++;
+    //   println("flipIt");
+    // }
   }
 
   public void snapshot() {

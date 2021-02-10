@@ -12,20 +12,25 @@ void flipIt(int n) {
     // tfRtn.easer.setEaseMode(1);
     // tfRtn.easer.setEaseByTarget(256/3.333, fTime, loopEvery/4.);
   }
-  rf1 = rf2;
-  if (n==0){
-    loopGrowths = 2;
-  } else if (n==1) {
-    loopGrowths = 3;
-  } else if (n==2) {
-    loopGrowths = 5;
-  } else if (n==3) {
-    loopGrowths = 9;
-  } else if (n==4) {
-    loopGrowths = 15;
-  }
+  // rf1 = rf2;
+  // if (n==0){
+  //   loopGrowths = 2;
+  // } else if (n==1) {
+  //   loopGrowths = 3;
+  // } else if (n==2) {
+  //   loopGrowths = 5;
+  // } else if (n==3) {
+  //   loopGrowths = 9;
+  // } else if (n==4) {
+  //   loopGrowths = 15;
+  // }
   rf2 = rf1 / pow(fib, -1* loopGrowths *symmetry);
   // rfacRtn.easer.setEaseByTarget(rf2, fTime, loopEvery/6.);
+
+    tfRtn.easer.setEaseMode(3); 
+    tfRtn.easer.setEaseByTarget(0, fTime, 30*10);
+    rShiftRtn.easer.setEaseMode(3); 
+    rShiftRtn.easer.setEaseByTarget(0, fTime, 30*10);
 }
 
 void loadParameters(int n) {
@@ -171,6 +176,477 @@ void loadParameters(int n) {
     parameterDisplayOn = false;
 
     // blendMode(SCREEN);
+  } else if (n==3000) { //halloween
+    revs = 12;
+    symmetry = 4;//0.74;
+    segments = 10;
+    fibPow = 6.287;
+    rep = 1;
+    scl = 1;
+    //loops every 300 frames
+    loopEvery = 34*30;
+    rainbowRate = 1;//0.0024?
+    fRate = 1;
+    tf = 11.333;
+    repShift = 9.740001;
+    scalingOn = false;
+    rotateZOn = true;
+    rotateXOn = false;
+    scaleInc = 0.001;
+    rfacDt = 1/pow(fib,12);
+    rfacInit = 800;
+    rotRateZ = 0.12;
+    rotRateX = 0.318;
+    clockwiseOn = true;
+    counterClockwiseOn = false;
+    bgOn = true;
+    myBrush = 6;
+    strWeight = 1;
+    growthOn = true;
+    nVids = 6;
+
+
+    loopGrowths = 1;
+    int nTurns = 1;
+    loopEvery = 300;
+
+    satf1 = 252;
+    sats1 = 252;
+    satf2 = 252;
+    sats2 = 252;
+    brif1 = 252;
+    bris1 = 252;
+    brif2 = 252;
+    bris2 = 252;
+    alphaf1 = 255;
+    alphas1 = 0;
+    alphaf2 = 255;
+    alphas2 = 0;
+    cShifts1 = 256/12;
+    cShifts2 = 3*256/12;
+    cShiftf2 = 256/6;
+
+    symRtn = new ParamRoutine(false, 1, 32.775);
+    segRtn = new ParamRoutine(false, 0, 1);
+    sizeRtn = new ParamRoutine(true, 1, 11.872);
+    repRtn = new ParamRoutine(false, 0, 1);
+    rainbowRtn = new ParamRoutine(false, 0, 1);
+    tfRtn = new ParamRoutine(false, 3, 85);
+    rShiftRtn = new ParamRoutine(false, 2, 31);
+    rrzRtn = new ParamRoutine(true, 342, 1);
+    rrxRtn = new ParamRoutine(true, 342, 20);
+    rfacRtn = new ParamRoutine(true, 342, 20);
+
+    rf1 = rfacInit;
+    rf2 = rf1 / pow(fib, -1* loopGrowths *symmetry);
+    // println(rf2);
+
+
+    // symRtn.easer.setValue(0.63); 
+    // symRtn.easer.setEaseMode(2); 
+    // symRtn.easer.setEaseByTarget(0.033, fTime, loopEvery);
+    rrzRtn.easer.setValue(0);
+    rrzRtn.easer.setEaseMode(0);
+    rrzRtn.easer.setEaseByTarget(nTurns*2*PI/rep, fTime, loopEvery);
+    // rrxRtn.easer.setValue(2*PI);
+    rrxRtn.easer.setValue(2*PI - PI/6.);
+    // rrxRtn.easer.setEaseMode(0);
+    // rrxRtn.easer.setEaseByTarget(2*PI, fTime, loopEvery);
+    rfacRtn.easer.setValue(rf1);
+    rfacRtn.easer.setEaseMode(99); 
+    rfacRtn.easer.setEaseByTarget(rf2, fTime, loopEvery);
+    
+    myPalette.setPalette(1);
+    
+    mode = "record";
+    goTime = false;
+    frameOn = false;
+    withAlpha = true;
+    parameterDisplayOn = false;
+    loopEvery = 35*30;
+
+    playVideo2 = true;
+    loadImagesHal();
+  } else if (n==3001) { //halloween bats
+    revs = 5;
+    symmetry = 1.6;//0.74;
+    segments = 20;
+    fibPow = 5.6;
+    rep = 2;
+    scl = 1;
+    //loops every 300 frames
+    loopEvery = 34*30;
+    rainbowRate = 3.6;//0.0024?
+    fRate = 1;
+    tf = 16.6;
+    repShift = 126.740001;
+    scalingOn = false;
+    rotateZOn = true;
+    rotateXOn = false;
+    scaleInc = 0.001;
+    rfacDt = 1/pow(fib,12);
+    rfacInit = 3;
+    rotRateZ = 0.12;
+    rotRateX = 0.318;
+    clockwiseOn = true;
+    counterClockwiseOn = false;
+    bgOn = true;
+    myBrush = 6;
+    strWeight = 1;
+    growthOn = true;
+    nVids = 6;
+
+
+    loopGrowths = 1;
+    int nTurns = 1;
+    loopEvery = 160;
+
+    satf1 = 252;
+    sats1 = 252;
+    satf2 = 252;
+    sats2 = 252;
+    brif1 = 252;
+    bris1 = 252;
+    brif2 = 252;
+    bris2 = 252;
+    alphaf1 = 255;
+    alphas1 = 0;
+    alphaf2 = 255;
+    alphas2 = 0;
+    cShifts1 = 256/12;
+    cShifts2 = 3*256/12;
+    cShiftf2 = 256/6;
+
+    symRtn = new ParamRoutine(false, 1, 32.775);
+    segRtn = new ParamRoutine(false, 0, 1);
+    sizeRtn = new ParamRoutine(false, 1, 11.872);
+    repRtn = new ParamRoutine(false, 0, 1);
+    rainbowRtn = new ParamRoutine(false, 0, 1);
+    tfRtn = new ParamRoutine(false, 3, 85);
+    rShiftRtn = new ParamRoutine(false, 2, 31);
+    rrzRtn = new ParamRoutine(true, 342, 1);
+    rrxRtn = new ParamRoutine(true, 342, 20);
+    rfacRtn = new ParamRoutine(true, 342, 20);
+
+    rf1 = rfacInit;
+    rf2 = rf1 / pow(fib, -1* loopGrowths *symmetry);
+    // println(rf2);
+
+
+    // symRtn.easer.setValue(0.63); 
+    // symRtn.easer.setEaseMode(2); 
+    // symRtn.easer.setEaseByTarget(0.033, fTime, loopEvery);
+    rrzRtn.easer.setValue(0);
+    rrzRtn.easer.setEaseMode(0);
+    rrzRtn.easer.setEaseByTarget(nTurns*2*PI/rep, fTime, 2*60*30);
+    rrxRtn.easer.setValue(2*PI);
+    // rrxRtn.easer.setValue(2*PI - PI/6.);
+    // rrxRtn.easer.setEaseMode(0);
+    // rrxRtn.easer.setEaseByTarget(2*PI, fTime, loopEvery);
+    rfacRtn.easer.setValue(rf1);
+    rfacRtn.easer.setEaseMode(99); 
+    rfacRtn.easer.setEaseByTarget(rf2, fTime, loopEvery);
+    
+    myPalette.setPalette(1);
+    
+    mode = "record";
+    goTime = false;
+    frameOn = false;
+    withAlpha = true;
+    parameterDisplayOn = false;
+    
+    playVideo2 = true;
+    loadImagesHal();
+  } else if (n==3002) { //halloween death
+    revs = 12;
+    symmetry = 2.13;//0.74;
+    segments = 3;
+    fibPow = 3.1;
+    rep = 2;
+    scl = 1;
+    //loops every 300 frames
+    loopEvery = 34*30;
+    rainbowRate = 3.6;//0.0024?
+    fRate = 1;
+    tf = 16.6;
+    repShift = 126.740001;
+    scalingOn = false;
+    rotateZOn = true;
+    rotateXOn = false;
+    scaleInc = 0.001;
+    rfacDt = 1/pow(fib,12);
+    rfacInit = 300;
+    rotRateZ = 0.12;
+    rotRateX = 0.318;
+    clockwiseOn = true;
+    counterClockwiseOn = true;
+    bgOn = true;
+    myBrush = 6;
+    strWeight = 1;
+    growthOn = true;
+    nVids = 6;
+
+
+    loopGrowths = 1;
+    int nTurns = 1;
+    loopEvery = 660;
+
+    satf1 = 252;
+    sats1 = 252;
+    satf2 = 252;
+    sats2 = 252;
+    brif1 = 252;
+    bris1 = 252;
+    brif2 = 252;
+    bris2 = 252;
+    alphaf1 = 255;
+    alphas1 = 0;
+    alphaf2 = 255;
+    alphas2 = 0;
+    cShifts1 = 256/12;
+    cShifts2 = 3*256/12;
+    cShiftf2 = 256/6;
+
+    symRtn = new ParamRoutine(false, 1, 32.775);
+    segRtn = new ParamRoutine(false, 0, 1);
+    sizeRtn = new ParamRoutine(false, 1, 11.872);
+    repRtn = new ParamRoutine(false, 0, 1);
+    rainbowRtn = new ParamRoutine(false, 0, 1);
+    tfRtn = new ParamRoutine(true, 342, 85);
+    rShiftRtn = new ParamRoutine(true, 342, 31);
+    rrzRtn = new ParamRoutine(true, 342, 1);
+    rrxRtn = new ParamRoutine(true, 342, 20);
+    rfacRtn = new ParamRoutine(true, 342, 20);
+
+    rf1 = rfacInit;
+    rf2 = rf1 / pow(fib, -1* loopGrowths *symmetry);
+    // println(rf2);
+
+
+    // symRtn.easer.setValue(0.63); 
+    // symRtn.easer.setEaseMode(2); 
+    // symRtn.easer.setEaseByTarget(0.033, fTime, loopEvery);
+    rrzRtn.easer.setValue(0);
+    rrzRtn.easer.setEaseMode(0);
+    rrzRtn.easer.setEaseByTarget(nTurns*2*PI/rep, fTime, 2*60*30);
+    rrxRtn.easer.setValue(2*PI);
+    // rrxRtn.easer.setValue(2*PI - PI/6.);
+    // rrxRtn.easer.setEaseMode(0);
+    // rrxRtn.easer.setEaseByTarget(2*PI, fTime, loopEvery);
+    rfacRtn.easer.setValue(rf1);
+    rfacRtn.easer.setEaseMode(99); 
+    rfacRtn.easer.setEaseByTarget(rf2, fTime, loopEvery);
+    tfRtn.easer.setValue(0);
+    tfRtn.easer.setEaseMode(3); 
+    tfRtn.easer.setEaseByTarget(tf, fTime, 30*10);
+    rShiftRtn.easer.setValue(0);
+    rShiftRtn.easer.setEaseMode(3); 
+    rShiftRtn.easer.setEaseByTarget(repShift, fTime, 30*10);
+    
+    myPalette.setPalette(1);
+    
+    mode = "record";
+    goTime = false;
+    frameOn = false;
+    withAlpha = true;
+    parameterDisplayOn = false;
+    
+    playVideo2 = true;
+    loadImagesHal();
+  } else if (n==3003) { //halloween final
+    revs = 16;
+    symmetry = 2.13;//0.74;
+    segments = 7;
+    fibPow = 3.1;
+    rep = 4;
+    scl = 1;
+    //loops every 300 frames
+    loopEvery = 34*30;
+    rainbowRate = 3.6;//0.0024?
+    fRate = 1;
+    tf = 16.6;
+    repShift = 126.740001;
+    scalingOn = false;
+    rotateZOn = true;
+    rotateXOn = false;
+    scaleInc = 0.001;
+    rfacDt = 1/pow(fib,12);
+    rfacInit = 3;
+    rotRateZ = 0.12;
+    rotRateX = 0.318;
+    clockwiseOn = true;
+    counterClockwiseOn = true;
+    bgOn = true;
+    myBrush = 6;
+    strWeight = 1;
+    growthOn = true;
+    nVids = 6;
+    frameRate(30);
+
+
+    loopGrowths = 1;
+    int nTurns = 3;
+    loopEvery = 160;
+
+    satf1 = 252;
+    sats1 = 252;
+    satf2 = 252;
+    sats2 = 252;
+    brif1 = 252;
+    bris1 = 252;
+    brif2 = 252;
+    bris2 = 252;
+    alphaf1 = 255;
+    alphas1 = 0;
+    alphaf2 = 255;
+    alphas2 = 0;
+    cShifts1 = 256/12;
+    cShifts2 = 3*256/12;
+    cShiftf2 = 256/6;
+
+    symRtn = new ParamRoutine(true, 342, 32.775);
+    segRtn = new ParamRoutine(false, 0, 1);
+    sizeRtn = new ParamRoutine(false, 1, 11.872);
+    repRtn = new ParamRoutine(false, 0, 1);
+    rainbowRtn = new ParamRoutine(false, 0, 1);
+    tfRtn = new ParamRoutine(true, 342, 85);
+    rShiftRtn = new ParamRoutine(true, 342, 31);
+    rrzRtn = new ParamRoutine(true, 342, 1);
+    rrxRtn = new ParamRoutine(true, 342, 20);
+    rfacRtn = new ParamRoutine(true, 342, 20);
+
+    rf1 = rfacInit;
+    rf2 = rf1 / pow(fib, -1* loopGrowths *symmetry);
+    // println(rf2);
+
+
+    symRtn.easer.setValue(9.63); 
+    symRtn.easer.setEaseMode(2); 
+    symRtn.easer.setEaseByTarget(1, fTime, 2*60*30);
+    rrzRtn.easer.setValue(0);
+    rrzRtn.easer.setEaseMode(0);
+    rrzRtn.easer.setEaseByTarget(nTurns*2*PI/rep, fTime, 2*60*30);
+    rrxRtn.easer.setValue(2*PI);
+    // rrxRtn.easer.setValue(2*PI - PI/6.);
+    // rrxRtn.easer.setEaseMode(0);
+    // rrxRtn.easer.setEaseByTarget(2*PI, fTime, loopEvery);
+    rfacRtn.easer.setValue(rf1);
+    rfacRtn.easer.setEaseMode(99); 
+    rfacRtn.easer.setEaseByTarget(rf2, fTime, loopEvery);
+    tfRtn.easer.setValue(15);
+    tfRtn.easer.setEaseMode(3); 
+    tfRtn.easer.setEaseByTarget(27, fTime, 2*60*30);
+    rShiftRtn.easer.setValue(10);
+    rShiftRtn.easer.setEaseMode(3); 
+    rShiftRtn.easer.setEaseByTarget(30, fTime, 2*60*30);
+    
+    myPalette.setPalette(1);
+    
+    mode = "record";
+    goTime = false;
+    frameOn = false;
+    withAlpha = true;
+    parameterDisplayOn = false;
+    
+    playVideo2 = true;
+    // loadImagesHal();
+  } else if (n==3004) { //halloween final insta
+    revs = 5;
+    symmetry = 2.13;//0.74;
+    segments = 7;
+    fibPow = 2.8;
+    rep = 4;
+    scl = 1;
+    //loops every 300 frames
+    loopEvery = 36*30;
+    rainbowRate = 3.6;//0.0024?
+    fRate = 1;
+    tf = 16.6;
+    repShift = 126.740001;
+    scalingOn = false;
+    rotateZOn = true;
+    rotateXOn = false;
+    scaleInc = 0.001;
+    rfacDt = 1/pow(fib,12);
+    rfacInit = 90;
+    rotRateZ = 0.12;
+    rotRateX = 0.318;
+    clockwiseOn = true;
+    counterClockwiseOn = true;
+    bgOn = true;
+    myBrush = 6;
+    strWeight = 1;
+    growthOn = true;
+    nVids = 6;
+    frameRate(30);
+
+
+    loopGrowths = 1;
+    int nTurns = 3;
+    int rfacLoops = 160;
+
+    satf1 = 252;
+    sats1 = 252;
+    satf2 = 252;
+    sats2 = 252;
+    brif1 = 252;
+    bris1 = 252;
+    brif2 = 252;
+    bris2 = 252;
+    alphaf1 = 255;
+    alphas1 = 0;
+    alphaf2 = 255;
+    alphas2 = 0;
+    cShifts1 = 256/12;
+    cShifts2 = 3*256/12;
+    cShiftf2 = 256/6;
+
+    symRtn = new ParamRoutine(true, 342, 32.775);
+    segRtn = new ParamRoutine(false, 0, 1);
+    sizeRtn = new ParamRoutine(false, 1, 11.872);
+    repRtn = new ParamRoutine(false, 0, 1);
+    rainbowRtn = new ParamRoutine(false, 0, 1);
+    tfRtn = new ParamRoutine(true, 342, 85);
+    rShiftRtn = new ParamRoutine(true, 342, 31);
+    rrzRtn = new ParamRoutine(true, 342, 1);
+    rrxRtn = new ParamRoutine(true, 342, 20);
+    rfacRtn = new ParamRoutine(true, 342, 20);
+
+    rf1 = rfacInit;
+    rf2 = rf1 / pow(fib, -1* loopGrowths *symmetry);
+    // println(rf2);
+
+
+    symRtn.easer.setValue(6); 
+    symRtn.easer.setEaseMode(2); 
+    symRtn.easer.setEaseByTarget(1.7, fTime, loopEvery);
+    rrzRtn.easer.setValue(0);
+    rrzRtn.easer.setEaseMode(0);
+    rrzRtn.easer.setEaseByTarget(nTurns*2*PI/rep, fTime, loopEvery*3);
+    rrxRtn.easer.setValue(2*PI);
+    // rrxRtn.easer.setValue(2*PI - PI/6.);
+    // rrxRtn.easer.setEaseMode(0);
+    // rrxRtn.easer.setEaseByTarget(2*PI, fTime, loopEvery);
+    rfacRtn.easer.setValue(300);
+    rfacRtn.easer.setEaseMode(1); 
+    rfacRtn.easer.setEaseByTarget(36000, fTime, loopEvery);
+    tfRtn.easer.setValue(32);
+    tfRtn.easer.setEaseMode(3); 
+    tfRtn.easer.setEaseByTarget(37, fTime, loopEvery);
+    rShiftRtn.easer.setValue(25);
+    rShiftRtn.easer.setEaseMode(3); 
+    rShiftRtn.easer.setEaseByTarget(30, fTime, loopEvery);
+    
+    myPalette.setPalette(1);
+    
+    mode = "record";
+    goTime = false;
+    frameOn = false;
+    withAlpha = true;
+    parameterDisplayOn = false;
+    
+    playVideo2 = true;
+    // loadImagesHal();
   } else if (n == 1349) { //...
     revs = 7;//?
     symmetry = 4;//0.74;
@@ -894,6 +1370,222 @@ void loadParameters(int n) {
     frameIncrement = false;
     restart = 0;
     
+  } else if (n == 8847) { //...
+    revs = 12;//?
+    symmetry = 4;//0.74;
+    segments = 120;
+    fibPow = 5.6;
+    rep = 12;
+    scl = 1;
+    //loops every 300 frames
+    loopGrowths = 1;
+    int nTurns = 3;
+    loopEvery = 300;
+    // tf = 256/5.5;
+    tf = 34.55;
+    repShift = 0.001;
+    // rainbowRate = float(loopEvery) / (5.*256.0);;//0.0024?
+    println((loopGrowths * segments * tf) % 256);
+    rainbowRate = loopEvery / (6.0 * 256 - (loopGrowths * segments * tf + nTurns * repShift) % 256);
+    // tf = (6)*256.0/segments;
+    scalingOn = false;
+    rotateZOn = false;
+    rotateXOn = false;
+    scaleInc = 0.001;
+    rfacDt = 1/pow(fib,7);
+    rfacInit = 10;
+    rfac = rfacInit;
+    rotRateZ = 0.12;
+    rotRateX = 0.318;
+    clockwiseOn = true;
+    counterClockwiseOn = true;
+    growthOn = false;
+    bgOn = true;
+    myBrush = 6;
+    strWeight = 1;
+
+    satf1 = 252;
+    sats1 = 252;
+    satf2 = 252;
+    sats2 = 252;
+    brif1 = 252;
+    bris1 = 252;
+    brif2 = 252;
+    bris2 = 252;
+    alphaf1 =90;
+    alphas1 = 60;
+    alphaf2 = 90;
+    alphas2 = 60;
+    cShifts1 = 0;
+    cShifts2 = 0;
+    cShiftf2 = 0;
+
+    symRtn = new ParamRoutine(false, 342, 59*30);
+    segRtn = new ParamRoutine(false, 342, 97);
+    sizeRtn = new ParamRoutine(false, 342, 14.872);
+    repRtn = new ParamRoutine(false, 342, 156);
+    rainbowRtn = new ParamRoutine(false, 342, 1);
+    tfRtn = new ParamRoutine(false, 342, 150);
+    rShiftRtn = new ParamRoutine(false, 342, 11);
+    rrzRtn = new ParamRoutine(true, 342, 1);
+    rrxRtn = new ParamRoutine(true, 342, 20);
+    rfacRtn = new ParamRoutine(true, 342, 20);
+    // loopGrowths = 1;
+    // int realrfInit = 90;
+    // float realrf2 = realrfInit / pow(fib, -1* loopGrowths *symmetry);
+    // rf1 = realrfInit * pow(fib, -1* loopGrowths *symmetry);
+    // rfacInit = int(rf1);
+    rf1 = rfacInit;
+    rf2 = rf1 / pow(fib, -1* loopGrowths *symmetry);
+    rf3 = rf2 / pow(fib, -1* loopGrowths *symmetry);
+    // println(rf2);
+
+
+    // symRtn.easer.setValue(0.63); 
+    // symRtn.easer.setEaseMode(2); 
+    // symRtn.easer.setEaseByTarget(0.033, fTime, loopEvery);
+    rrzRtn.easer.setValue(0);
+    rrzRtn.easer.setEaseMode(0);
+    rrzRtn.easer.setEaseByTarget(nTurns*2*PI/rep, fTime, loopEvery);
+    rrxRtn.easer.setValue(2*PI);
+    // rrxRtn.easer.setValue(2*PI - PI/6.);
+    // rrxRtn.easer.setEaseMode(0);
+    // rrxRtn.easer.setEaseByTarget(2*PI, fTime, loopEvery);
+    rfacRtn.easer.setValue(rf1);
+    rfacRtn.easer.setEaseMode(99); 
+    rfacRtn.easer.setEaseByTarget(rf2, fTime, loopEvery);
+    // rShiftRtn.easer.setValue(256/3.3333);
+    rShiftRtn.easer.setValue(256);
+    rShiftRtn.easer.setEaseMode(0);
+    rShiftRtn.easer.setEaseByTarget(0, fTime, loopEvery);
+    // rShiftRtn.easer.setEaseByTarget(2*256/3., fTime, loopEvery/2.);
+    tfRtn.easer.setValue(0);
+    tfRtn.easer.setEaseMode(0);
+    tfRtn.easer.setEaseByTarget(256, fTime, loopEvery);
+    // tfRtn.easer.setEaseByTarget(256/6., fTime, loopEvery/2.);
+
+    //flipIt n==2
+    // rfacRtn.easer.setEaseByTarget(rf2, fTime, loopEvery/2.);
+    
+    myPalette.setPalette(1);
+    
+    mode = "record";
+    goTime = false;
+    frameOn = false;
+    parameterDisplayOn = false;
+    showSpiral = true;
+    playVideo1 = false;
+    playVideo2 = false;
+    frameIncrement = false;
+    restart = 0;
+  } else if (n == 8848) { //constant grow
+    revs = 12;//?
+    symmetry = 4;//0.74;
+    segments = 120;
+    fibPow = 5.6;
+    rep = 12;
+    scl = 1;
+    //loops every 300 frames
+    loopGrowths = 1;
+    int nTurns = 1;
+    loopEvery = 300;
+    // tf = 256/5.5;
+    tf = 1.8;
+    repShift = 7.1;
+    // rainbowRate = float(loopEvery) / (5.*256.0);;//0.0024?
+    println((loopGrowths * segments * tf) % 256);
+    rainbowRate = loopEvery / (2.0 * 256 - (loopGrowths * segments * tf + nTurns * repShift) % 256);
+    // tf = (6)*256.0/segments;
+    scalingOn = false;
+    rotateZOn = false;
+    rotateXOn = false;
+    scaleInc = 0.001;
+    rfacDt = 1/pow(fib,7);
+    rfacInit = 10;
+    rfac = rfacInit;
+    rotRateZ = 0.12;
+    rotRateX = 0.318;
+    clockwiseOn = true;
+    counterClockwiseOn = true;
+    growthOn = false;
+    bgOn = true;
+    myBrush = 6;
+    strWeight = 1;
+
+    satf1 = 252;
+    sats1 = 252;
+    satf2 = 252;
+    sats2 = 252;
+    brif1 = 252;
+    bris1 = 252;
+    brif2 = 252;
+    bris2 = 252;
+    alphaf1 =90;
+    alphas1 = 60;
+    alphaf2 = 90;
+    alphas2 = 60;
+    cShifts1 = 0;
+    cShifts2 = 0;
+    cShiftf2 = 0;
+
+    symRtn = new ParamRoutine(false, 342, 59*30);
+    segRtn = new ParamRoutine(false, 342, 97);
+    sizeRtn = new ParamRoutine(false, 342, 14.872);
+    repRtn = new ParamRoutine(false, 342, 156);
+    rainbowRtn = new ParamRoutine(false, 342, 1);
+    tfRtn = new ParamRoutine(false, 342, 150);
+    rShiftRtn = new ParamRoutine(false, 342, 11);
+    rrzRtn = new ParamRoutine(true, 342, 1);
+    rrxRtn = new ParamRoutine(true, 342, 20);
+    rfacRtn = new ParamRoutine(true, 342, 20);
+    // loopGrowths = 1;
+    // int realrfInit = 90;
+    // float realrf2 = realrfInit / pow(fib, -1* loopGrowths *symmetry);
+    // rf1 = realrfInit * pow(fib, -1* loopGrowths *symmetry);
+    // rfacInit = int(rf1);
+    rf1 = rfacInit;
+    rf2 = rf1 / pow(fib, -1* loopGrowths *symmetry);
+    rf3 = rf2 / pow(fib, -1* loopGrowths *symmetry);
+    // println(rf2);
+
+
+    // symRtn.easer.setValue(0.63); 
+    // symRtn.easer.setEaseMode(2); 
+    // symRtn.easer.setEaseByTarget(0.033, fTime, loopEvery);
+    rrzRtn.easer.setValue(0);
+    rrzRtn.easer.setEaseMode(0);
+    rrzRtn.easer.setEaseByTarget(nTurns*2*PI/rep, fTime, loopEvery);
+    // rrxRtn.easer.setValue(2*PI);
+    rrxRtn.easer.setValue(2*PI - PI/6.);
+    // rrxRtn.easer.setEaseMode(0);
+    // rrxRtn.easer.setEaseByTarget(2*PI, fTime, loopEvery);
+    rfacRtn.easer.setValue(rf1);
+    rfacRtn.easer.setEaseMode(99); 
+    rfacRtn.easer.setEaseByTarget(rf2, fTime, loopEvery);
+    // rShiftRtn.easer.setValue(256/3.3333);
+    rShiftRtn.easer.setValue(256);
+    rShiftRtn.easer.setEaseMode(0);
+    rShiftRtn.easer.setEaseByTarget(0, fTime, loopEvery);
+    // rShiftRtn.easer.setEaseByTarget(2*256/3., fTime, loopEvery/2.);
+    tfRtn.easer.setValue(0);
+    tfRtn.easer.setEaseMode(0);
+    tfRtn.easer.setEaseByTarget(256, fTime, loopEvery);
+    // tfRtn.easer.setEaseByTarget(256/6., fTime, loopEvery/2.);
+
+    //flipIt n==2
+    // rfacRtn.easer.setEaseByTarget(rf2, fTime, loopEvery/2.);
+    
+    myPalette.setPalette(10);
+    
+    mode = "record";
+    goTime = false;
+    frameOn = false;
+    parameterDisplayOn = false;
+    showSpiral = true;
+    playVideo1 = false;
+    playVideo2 = false;
+    frameIncrement = false;
+    restart = 0;
   } else if (n == 345) { //...
     revs = 160;//?
     symmetry = 0.74;//0.74;
@@ -2217,4 +2909,10 @@ void runParamRoutines() {
     rfac = rfacRtn.getFloat(rfac);
     // println(rfac-old);
   }
+}
+
+void blerp(){
+  rrzRtn.easer.setEaseByTarget(rrzRtn.easer.val + 2*PI/rep, fTime, loopEvery);
+
+  myRecorder.startRecording();
 }
