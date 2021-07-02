@@ -1094,12 +1094,12 @@ void loadParameters(int n) {
     tf = 5.333;
     repShift = 0.00163;
     scalingOn = false;
-    rotateZOn = false;
+    rotateZOn = true;
     rotateXOn = false;
     scaleInc = 0.001;
-    rfacDt = 1/pow(fib,21);
+    rfacDt = 1/pow(fib,2);
     rfacInit = 800;
-    rotRateZ = 0.12;
+    rotRateZ = 7.12;
     rotRateX = 0.318;
     clockwiseOn = true;
     counterClockwiseOn = true;
