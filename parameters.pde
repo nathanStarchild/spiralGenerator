@@ -1843,6 +1843,8 @@ void loadParameters(int n) {
     rShiftRtn = new ParamRoutine(true, 4, 330);
     rrzRtn = new ParamRoutine(false, 0, 1);
     rrxRtn = new ParamRoutine(false, 1, 20);
+    rfacRtn = new ParamRoutine(true, 14, rfacDt);
+    rfacRtn.easer.setValue(rfacInit);
     
   } else if (n==1) {
     revs = 10;
@@ -1861,7 +1863,8 @@ void loadParameters(int n) {
     rotateXOn = false;
     scaleInc = 0.001;
     rfacDt = 1/pow(fib,12);
-    rfacInit = 800;
+    rfacInit = 200;
+    rfac = rfacInit;
     rotRateZ = 0.12;
     rotRateX = 0.318;
     clockwiseOn = true;
@@ -1895,6 +1898,8 @@ void loadParameters(int n) {
     rShiftRtn = new ParamRoutine(true, 2, 23);
     rrzRtn = new ParamRoutine(false, 0, 1);
     rrxRtn = new ParamRoutine(false, 1, 20);
+    rfacRtn = new ParamRoutine(true, 14, rfacDt);
+    // rfacRtn.easer.setValue(rfacInit);
     
     myPalette.setPalette(13);
     
@@ -2096,6 +2101,8 @@ void loadParameters(int n) {
     rShiftRtn = new ParamRoutine(false, 2, 330);
     rrzRtn = new ParamRoutine(false, 1, 118);
     rrxRtn = new ParamRoutine(false, 1, 121);
+    rfacRtn = new ParamRoutine(true, 14, rfacDt);
+    rfacRtn.easer.setValue(rfacInit);
     
     myPalette.setPalette(2);
 
@@ -2149,6 +2156,8 @@ void loadParameters(int n) {
     rShiftRtn = new ParamRoutine(false, 2, 330);
     rrzRtn = new ParamRoutine(false, 1, 118);
     rrxRtn = new ParamRoutine(false, 1, 121);
+    rfacRtn = new ParamRoutine(true, 14, rfacDt);
+    rfacRtn.easer.setValue(rfacInit);
     
     myPalette.setPalette(5);
 
@@ -2200,6 +2209,8 @@ void loadParameters(int n) {
     rShiftRtn = new ParamRoutine(false, 2, 330);
     rrzRtn = new ParamRoutine(false, 1, 118);
     rrxRtn = new ParamRoutine(false, 1, 121);
+    rfacRtn = new ParamRoutine(true, 14, rfacDt);
+    rfacRtn.easer.setValue(rfacInit);
 
     myPalette.setPalette(3);
   } else if (n==66) {
@@ -2352,6 +2363,8 @@ void loadParameters(int n) {
     rShiftRtn = new ParamRoutine(false, 2, 330);
     rrzRtn = new ParamRoutine(false, 1, 118);
     rrxRtn = new ParamRoutine(false, 1, 121);
+    rfacRtn = new ParamRoutine(true, 14, rfacDt);
+    rfacRtn.easer.setValue(rfacInit);
     
     
     myPalette.setPalette(6);
@@ -2406,6 +2419,8 @@ void loadParameters(int n) {
     rShiftRtn = new ParamRoutine(false, 2, 330);
     rrzRtn = new ParamRoutine(false, 1, 118);
     rrxRtn = new ParamRoutine(false, 1, 121);
+    rfacRtn = new ParamRoutine(true, 14, rfacDt);
+    rfacRtn.easer.setValue(rfacInit);
   
   } else if (n==99) {
     revs = 33;
@@ -2534,6 +2549,8 @@ void loadParameters(int n) {
     rShiftRtn = new ParamRoutine(false, 2, 2*loopEvery/(120.0));
     rrzRtn = new ParamRoutine(false, 0, 1);
     rrxRtn = new ParamRoutine(false, 1, 20);
+    rfacRtn = new ParamRoutine(true, 14, rfacDt);
+    rfacRtn.easer.setValue(rfacInit);
     
     
   } else if (n==2) { //heartless machine
@@ -2588,6 +2605,8 @@ void loadParameters(int n) {
     rShiftRtn = new ParamRoutine(true, 2, 31);
     rrzRtn = new ParamRoutine(false, 0, 1);
     rrxRtn = new ParamRoutine(false, 1, 20);
+    rfacRtn = new ParamRoutine(true, 14, rfacDt);
+    rfacRtn.easer.setValue(rfacInit);
     
     myPalette.setPalette(1);
     
@@ -2641,10 +2660,12 @@ void loadParameters(int n) {
     sizeRtn = new ParamRoutine(true, 1, 14.872);
     repRtn = new ParamRoutine(true, 1, 156);
     rainbowRtn = new ParamRoutine(false, 0, 1);
-    tfRtn = new ParamRoutine(true, 5, 328);
+    tfRtn = new ParamRoutine(true, 55, 328);
     rShiftRtn = new ParamRoutine(false, 2, 11);
     rrzRtn = new ParamRoutine(false, 0, 1);
     rrxRtn = new ParamRoutine(false, 1, 20);
+    rfacRtn = new ParamRoutine(true, 14, rfacDt);
+    rfacRtn.easer.setValue(rfacInit);
     
     myPalette.setPalette(14);
     
@@ -2709,7 +2730,23 @@ void loadParameters(int n) {
     goTime = false;
     
   }
+  setInits();
   
+}
+
+void setInits(){
+
+    symRtn.initialFloat = symmetry;
+    segRtn.initialInt = segments;
+    sizeRtn.initialFloat = fibPow;
+    repRtn.initialInt = rep; 
+    rainbowRtn.initialFloat = rainbowRate;
+    tfRtn.initialFloat = tf;
+    rShiftRtn.initialFloat = repShift;
+    rrzRtn.initialFloat = 0;
+    rrxRtn.initialFloat = 0;
+    rfacRtn.initialFloat = rfacInit;
+
 }
 
 public class ParamRoutine {
@@ -2718,6 +2755,8 @@ public class ParamRoutine {
   float speed, prevVal;
   int nModes;
   Easer easer;
+  int initialInt;
+  float initialFloat;
     ParamRoutine (boolean on, int m, float s) {
       this.enabled = on;
       this.mode = m;
@@ -2746,6 +2785,10 @@ public class ParamRoutine {
       } else if (mode == 6) { //mousex
         valOut = int(map(mouseX, 0, width, 0, 150));
       } else if (mode == 342) { //Green Light Project
+        valOut = int(easer.getValue(fTime));
+      } else if (mode == 13) { //easer
+        valOut = int(easer.getValue(fTime));
+      } else if (mode == 14) { //old rfac growth
         valOut = int(easer.getValue(fTime));
       }
       return valOut;
@@ -2833,6 +2876,13 @@ public class ParamRoutine {
         valOut = map(sin(t*PI*2), -1, 1, 0, 4);
         //println("t = " + t + ", val = " + valOut);
         //exit();
+      } else if (mode == 13) { //easer
+        valOut = easer.getValue(fTime);
+      }  else if (mode == 14) { //old rfac growth
+        // valOut = this.initialFloat + pow(fTime*this.speed, 2);
+        valOut = this.initialFloat + pow(fTime*rfacDt, 2);
+      }  else if (mode == 15) { //mouseY
+        valOut = map(mouseY, 0, height, 0, 4*height);;
       }
       //if (prevVal == -99) {
       //  prevVal = valOut;

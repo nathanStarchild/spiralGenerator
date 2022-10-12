@@ -40,7 +40,7 @@ int im = 0;
 boolean frameOn = false;
 boolean playVideo1 = false;
 boolean playVideo2 = false;
-boolean first = true;
+boolean first = false;
 PImage vid1;
 PImage vid2;
 boolean showSpiral = true;
@@ -61,7 +61,7 @@ void setup() {
   //fullScreen(P3D, SPAN);
   // fullScreen(P3D, 2);
   // size(1080, 1350, P3D);
-  size(864, 1080, P3D);
+  size(864, 864, P3D);
   // size(1920, 1080, P3D);
   // size(864, 864, P3D);
   noLoop();
@@ -94,12 +94,12 @@ void setup() {
 
   myPalette = new Palette();
   // delay(1000);
-  loadParameters(3000);
+  loadParameters(1);
   myRecorder = new Recorder(this, g, loopEvery);
   // myRecorder = new Recorder(this, g, 2*30*60);
-  myRecorder.startRecording();
+  // myRecorder.startRecording();
   // mode = "record";
-  // mode = "live";
+  mode = "live";
   fftOn = false;
   // loadImages2();
   
@@ -125,7 +125,7 @@ void setup() {
 
 void draw() {
   
-  println("frame " + frameCount);
+  // println("frame " + frameCount);
   if (first){
     first = false;
 
@@ -243,6 +243,7 @@ void draw() {
   //  //rotateX(2*PI/rep);
   //  hue = int((n*repShift+(fTime / rainbowRate)) % 256);
     //for (int t=0; t<segments*revs; t++) {
+      // println(showSpiral);
   if (showSpiral){
     for (int t=segments*revs; t>=0; t--) {
       float r =  rfac * pow(fib, (-1 * symmetry * t/float(segments)));
@@ -278,18 +279,18 @@ void draw() {
             noStroke();
           }
           if (clockwiseOn) {
-            // brush(r*sin(theta), r*cos(theta), s);
+            brush(r*sin(theta), r*cos(theta), s);
             // im = getImgNum(1, n);
             // texnGon(myBrush, r*sin(theta), r*cos(theta), s, im, f1);
             // newTexnGon(myBrush, r*sin(theta), r*cos(theta), s, imggg, f1);
             // if (true){
               // brush(r*sin(theta), r*cos(theta), s);
-            if (s<2){
-              brush(r*sin(theta), r*cos(theta), s);
-            } else {
-              new2TexnGon(myBrush, r*sin(theta), r*cos(theta), 2*s, (t*n*11 + fTime)%325, f1);
-              // texPhone(r*sin(theta), r*cos(theta), 2*s, int((n%nVids)*256 + (fHue+(t*tf))%256), f1);
-            }
+            // if (s<2){
+            //   brush(r*sin(theta), r*cos(theta), s);
+            // } else {
+            //   new2TexnGon(myBrush, r*sin(theta), r*cos(theta), 2*s, (t*n*11 + fTime)%325, f1);
+            //   // texPhone(r*sin(theta), r*cos(theta), 2*s, int((n%nVids)*256 + (fHue+(t*tf))%256), f1);
+            // }
           }
           if (counterClockwiseOn) {
             fill(f2);
@@ -301,18 +302,18 @@ void draw() {
             }
             pushMatrix();
             translate(0, 0,  0.01);
-            // brush(r*sin(theta2), r*cos(theta2), s);
+            brush(r*sin(theta2), r*cos(theta2), s);
             // im = getImgNum(2, n);
             // texnGon(myBrush, r*sin(theta2), r*cos(theta2), s, im, f2);
             // if (true){
               // brush(r*sin(theta2), r*cos(theta2), s);
-            if (s<2){
-              brush(r*sin(theta2), r*cos(theta2), s);
-            } else {
-              // new2TexnGon(myBrush, r*sin(theta2), r*cos(theta2), 2*s, n*325 + (t*11 + (fTime))%325, f2);
-              new2TexnGon(myBrush, r*sin(theta2), r*cos(theta2), 2*s, (t*11 + (fTime))%325, f2);
-              // texPhone(r*sin(theta2), r*cos(theta2), 2*s, int((n%nVids)*256 + (fHue+(t*tf)+cShiftf2)%256), f2);
-            }
+            // if (s<2){
+            //   brush(r*sin(theta2), r*cos(theta2), s);
+            // } else {
+            //   // new2TexnGon(myBrush, r*sin(theta2), r*cos(theta2), 2*s, n*325 + (t*11 + (fTime))%325, f2);
+            //   new2TexnGon(myBrush, r*sin(theta2), r*cos(theta2), 2*s, (t*11 + (fTime))%325, f2);
+            //   // texPhone(r*sin(theta2), r*cos(theta2), 2*s, int((n%nVids)*256 + (fHue+(t*tf)+cShiftf2)%256), f2);
+            // }
             popMatrix();
           }
         }
@@ -865,12 +866,14 @@ void keyPressed() {
         mSize = true;
         symRtn.enabled = true;
         symRtn.setMode(6);
+        rfacRtn.setMode(15);
       break;  
       case('}'):
         growthOn = true;
         mSize = false;
         symRtn.enabled = false;
         symRtn.setMode(6);
+        rfacRtn.setMode(14);
       break;    
       case('B'):
       myBrush = (myBrush + 1) % 11;
