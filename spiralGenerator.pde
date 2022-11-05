@@ -58,10 +58,10 @@ Recorder myRecorder;
   PImage imggg;
 
 void setup() {
-  //fullScreen(P3D, SPAN);
-  // fullScreen(P3D, 2);
-  // size(1080, 1350, P3D);
-  size(864, 864, P3D);
+  // fullScreen(P3D, SPAN);
+  // fullScreen(P3D, 1);
+  size(1280, 1010, P3D);
+  // size(864, 864, P3D);
   // size(1920, 1080, P3D);
   // size(864, 864, P3D);
   noLoop();
@@ -708,9 +708,11 @@ void keyPressed() {
       break;
       case('w'):
       symmetry = symmetry * 1.1;
+      symRtn.easer.setEaseByFactor(1.1, fTime, 100);
       break;
       case('s'):
       symmetry = symmetry / 1.1;
+      symRtn.easer.setEaseByFactor(1/1.1, fTime, 100);
       break;
       case('e'):
       segments = segments + 1;
@@ -726,9 +728,11 @@ void keyPressed() {
       break;
       case('r'):
       fibPow = fibPow + 1;
+      sizeRtn.easer.setEaseByTarget(fibPow, fTime, 100);
       break;
       case('f'):
       fibPow = fibPow - 1;
+      sizeRtn.easer.setEaseByTarget(fibPow, fTime, 100);
       break;
       case('t'):
       rep = rep + 1;
@@ -738,21 +742,27 @@ void keyPressed() {
       break;
       case('y'):
       rainbowRate *= 1.1;
+      rainbowRtn.easer.setEaseByTarget(rainbowRate, fTime, 100);
       break;
       case('h'):
       rainbowRate *= 0.9;
+      rainbowRtn.easer.setEaseByTarget(rainbowRate, fTime, 100);
       break;
       case('u'):
       tf = tf * 1.1;
+      tfRtn.easer.setEaseByTarget(tf, fTime, 100);
       break;
       case('j'):
       tf = tf / 1.1;
+      tfRtn.easer.setEaseByTarget(tf, fTime, 100);
       break;
       case('i'):
       repShift = repShift * 1.1;
+      rShiftRtn.easer.setEaseByTarget(repShift, fTime, 100);
       break;
       case('k'):
       repShift = repShift * 0.9;
+      rShiftRtn.easer.setEaseByTarget(repShift, fTime, 100);
       break;
       case('z'):
       parameterDisplayOn = !parameterDisplayOn;
@@ -763,24 +773,24 @@ void keyPressed() {
       } else {
         restart = millis();
       }
-      loadParameters(342);
-      t1Hit = false;
-      t2Hit = false;
-      t3Hit = false;
-      t4Hit = false;
-      t5Hit = false;
-      t6Hit = false;
-      t7Hit = false;
-      t8Hit = false;
-      t9Hit = false;
-      t10Hit = false;
-      tStart2Hit = false;
-      t11Hit = false;
-      t12Hit = false;
-      t13Hit = false;
-      t14Hit = false;
-      t15Hit = false;
-      starting = true;
+      // loadParameters(342);
+      // t1Hit = false;
+      // t2Hit = false;
+      // t3Hit = false;
+      // t4Hit = false;
+      // t5Hit = false;
+      // t6Hit = false;
+      // t7Hit = false;
+      // t8Hit = false;
+      // t9Hit = false;
+      // t10Hit = false;
+      // tStart2Hit = false;
+      // t11Hit = false;
+      // t12Hit = false;
+      // t13Hit = false;
+      // t14Hit = false;
+      // t15Hit = false;
+      // starting = true;
       //record = true;
       //symmetry = 200;
       break;
@@ -879,7 +889,7 @@ void keyPressed() {
       myBrush = (myBrush + 1) % 11;
       break;
       case('+'):
-        saveParams();
+        asEasers();
         break;
       case(' '):
         //fftOn = !fftOn;
@@ -891,8 +901,8 @@ void keyPressed() {
         } else {
           restart = frameCount - int(tStart2);
         }
-        tStart2Hit = false;
-        doStart2();
+        // tStart2Hit = false;
+        // doStart2();
         break;
       case('/'):
         //tStart3Hit = false;

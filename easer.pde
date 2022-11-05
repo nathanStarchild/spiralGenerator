@@ -15,7 +15,7 @@ public class Easer {
     tStart = 0;
     tEnd = tStart + duration;
     paused = false;
-    easeMode = 10;
+    easeMode = 3;
   }
   
   //public static final int EASE_LINEAR = 0;       // the simplest case, for completeness

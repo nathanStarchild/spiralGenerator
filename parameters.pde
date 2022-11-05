@@ -1857,7 +1857,7 @@ void loadParameters(int n) {
     loopEvery = 200;
     rainbowRate = 1.481;//0.0024?
     tf = 5.333;
-    repShift = 0.000001;
+    repShift = 0.01;
     scalingOn = false;
     rotateZOn = true;
     rotateXOn = false;
@@ -1889,13 +1889,18 @@ void loadParameters(int n) {
     cShifts2 = 3*256/12;
     cShiftf2 = 256/6;
 
-    symRtn = new ParamRoutine(false, 1, 32.775);
+    symRtn = new ParamRoutine(true, 13, 32.775);
+    symRtn.asEaser(symmetry);
     segRtn = new ParamRoutine(false, 0, 1);
-    sizeRtn = new ParamRoutine(false, 1, 2.5);
+    sizeRtn = new ParamRoutine(true, 1, 2.5);
+    sizeRtn.asEaser(fibPow);
     repRtn = new ParamRoutine(false, 0, 1);
-    rainbowRtn = new ParamRoutine(false, 0, 1);
-    tfRtn = new ParamRoutine(false, 3, 25);
+    rainbowRtn = new ParamRoutine(true, 0, 1);
+    rainbowRtn.asEaser(rainbowRate);
+    tfRtn = new ParamRoutine(true, 3, 25);
+    tfRtn.asEaser(tf);
     rShiftRtn = new ParamRoutine(true, 2, 23);
+    rShiftRtn.asEaser(repShift);
     rrzRtn = new ParamRoutine(false, 0, 1);
     rrxRtn = new ParamRoutine(false, 1, 20);
     rfacRtn = new ParamRoutine(true, 14, rfacDt);
@@ -2749,6 +2754,14 @@ void setInits(){
 
 }
 
+void asEasers() {
+    symRtn.asEaser(symmetry);
+    sizeRtn.asEaser(fibPow);
+    rainbowRtn.asEaser(rainbowRate);
+    tfRtn.asEaser(tf);
+    rShiftRtn.asEaser(repShift);
+    }
+
 public class ParamRoutine {
   boolean enabled;
   int mode;
@@ -2768,6 +2781,12 @@ public class ParamRoutine {
     
     public void setEaserValue(float val) {
       easer.setValue(val);
+    }
+
+    public void asEaser(float val) {
+      this.mode = 13;
+      this.easer.setEaseMode(3);
+      this.easer.setValue(val);
     }
 
     int getInt(int valIn) {
