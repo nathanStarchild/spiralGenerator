@@ -11,26 +11,29 @@ void flipIt(int n) {
   } else if (n == 2) {
     // tfRtn.easer.setEaseMode(1);
     // tfRtn.easer.setEaseByTarget(256/3.333, fTime, loopEvery/4.);
-  }
-  // rf1 = rf2;
-  // if (n==0){
-  //   loopGrowths = 2;
-  // } else if (n==1) {
-  //   loopGrowths = 3;
-  // } else if (n==2) {
-  //   loopGrowths = 5;
-  // } else if (n==3) {
-  //   loopGrowths = 9;
-  // } else if (n==4) {
-  //   loopGrowths = 15;
-  // }
-  rf2 = rf1 / pow(fib, -1* loopGrowths *symmetry);
-  // rfacRtn.easer.setEaseByTarget(rf2, fTime, loopEvery/6.);
+  } else if (n == 3) {
+    rfacRtn.easer.setEaseByTarget(rf2, fTime, loopEvery/2.);
+  } else {
+    // rf1 = rf2;
+    // if (n==0){
+    //   loopGrowths = 2;
+    // } else if (n==1) {
+    //   loopGrowths = 3;
+    // } else if (n==2) {
+    //   loopGrowths = 5;
+    // } else if (n==3) {
+    //   loopGrowths = 9;
+    // } else if (n==4) {
+    //   loopGrowths = 15;
+    // }
+    rf2 = rf1 / pow(fib, -1* loopGrowths *symmetry);
+    // rfacRtn.easer.setEaseByTarget(rf2, fTime, loopEvery/6.);
 
-    tfRtn.easer.setEaseMode(3); 
-    tfRtn.easer.setEaseByTarget(0, fTime, 30*10);
-    rShiftRtn.easer.setEaseMode(3); 
-    rShiftRtn.easer.setEaseByTarget(0, fTime, 30*10);
+      tfRtn.easer.setEaseMode(3); 
+      tfRtn.easer.setEaseByTarget(0, fTime, 30*10);
+      rShiftRtn.easer.setEaseMode(3); 
+      rShiftRtn.easer.setEaseByTarget(0, fTime, 30*10);
+  }
 }
 
 void loadParameters(int n) {

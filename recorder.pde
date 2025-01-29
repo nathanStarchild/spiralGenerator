@@ -45,6 +45,10 @@ public class Recorder {
       println("done recording");
       exit();
     }
+    if ( recording && app.frameCount == startFrame + (loopFrames/2)) {
+
+      flipIt(3);
+    }
     // if ( recording && app.frameCount == startFrame + loopFrames - 15*30) {
     //   flipIt(1);
     //   println("bringitback");

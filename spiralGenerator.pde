@@ -58,12 +58,12 @@ Recorder myRecorder;
   PImage imggg;
 
 void setup() {
-  // fullScreen(P3D, SPAN);
+  // fullScreen(P3D, span);
   // fullScreen(P3D, 1);
-  size(1280, 1010, P3D);
+  // size(1280, 1010, P3D);
   // size(864, 864, P3D);
   // size(1920, 1080, P3D);
-  // size(864, 864, P3D);
+  size(980, 980, P3D);
   noLoop();
   // smooth(3);
   background(0, 0, 0);
@@ -99,7 +99,7 @@ void setup() {
   // myRecorder = new Recorder(this, g, 2*30*60);
   // myRecorder.startRecording();
   // mode = "record";
-  mode = "live";
+  // mode = "record";
   fftOn = false;
   // loadImages2();
   
